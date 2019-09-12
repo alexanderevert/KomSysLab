@@ -1,5 +1,6 @@
-import java.io.*;
+
 import java.util.*;
+import java.io.*;
 import java.net.*;
 
 public class ChatRoomServer{
@@ -11,9 +12,12 @@ public class ChatRoomServer{
             System.exit(1);
         }
 
-        String port = args[0];
-        SocketServer socket = null;
+        int port = Integer.valueOf(args[0]);
+        ServerSocket socket = null;
         ArrayList<ClientThread> clientList = new ArrayList<ClientThread>();
+        Socket clientSocket = null; 
+        PrintWriter out=null;
+        BufferedReader in=null;
 
         try{
             // Bind port 
@@ -26,25 +30,25 @@ public class ChatRoomServer{
             }
 
             // Vänta in klient
-            Socket clientSocket = null; 
+            
             System.out.println ("Waiting for connection..");
 
             try { 
-                clientSocket = serverSocket.accept(); 
+                clientSocket = socket.accept(); 
             } catch (IOException e) { 
                 System.err.println("Accept failed."); 
                 System.exit(1); 
             } 
 
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true); 
-            BufferedReader in = new BufferedReader(new InputStreamReader( clientSocket.getInputStream())); 
+            out = new PrintWriter(clientSocket.getOutputStream(), true); 
+            in = new BufferedReader(new InputStreamReader( clientSocket.getInputStream())); 
             // inte datain/dataoutputstream?
 
             // Ny klienttråd
-            ClientThread newClient = new ClientThread(clientSocket, "User " + clientList.length(), in, out);
+            ClientThread newClient = new ClientThread(clientSocket, "User " + clientList.size(), in, out);
             clientList.add(newClient);
             Thread thread = new Thread(newClient);
-            tread.start();
+            thread.start();
 
         } catch (IOException e){
             e.printStackTrace();
@@ -52,7 +56,7 @@ public class ChatRoomServer{
             if (out != null) out.close(); 
             if (in != null) in.close(); 
             if (clientSocket != null) clientSocket.close(); 
-            if (serverSocket != null) serverSocket.close(); 
+            if (socket != null) socket.close(); 
         }
         
     }
