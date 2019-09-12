@@ -1,44 +1,46 @@
 import java.io.*;
+import java.util.*;
 import java.net.*;
 
-public class EchoClient {
-    public static void main(String[] args) throws IOException {
+public class ChatRoomClient{
 
-        String serverHostname = args[0];
-	    int port = Integer.parseInt(args[1]);
 
-        Socket echoSocket = null; PrintWriter out = null; BufferedReader in = null;
+    public static void main(String[] args) throws IOException{
 
-        try {
-            echoSocket = new Socket(serverHostname, port);
-            out = new PrintWriter(echoSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(
-                                        echoSocket.getInputStream()));
-        } catch (UnknownHostException e) {
-            System.err.println("Don't know about host: " + serverHostname);
-            System.exit(1);
-        } catch (IOException e) {
-            System.err.println("Couldn't get I/O for "
-                               + "the connection to: " + serverHostname);
-            System.exit(1);
-        } finally{
-            out.close(); 
-            in.close(); 
-            stdIn.close(); 
-            echoSocket.close();
-        }
+ 		 if (args.length != 2){
+        	    System.err.println("Usage: java ChatRoomServer <port>, host <ip.addr>");
+            	System.exit(1);
+        	}
 
-	BufferedReader stdIn = new BufferedReader(
-                                   new InputStreamReader(System.in));
-	String userInput;
+		 String hostName = args[1];
+		 int port = Integer.parseInt(args[0]);
+		 Socket socket = null;
+		 PrintWriter out = null;
+		 BufferedReader in = null;
+		 String lineIn;
+		 try{
+			 socket = new Socket(hostName, port);
+			 out = new PrintWriter(socket.getOutputStream(), true);
+			 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-        System.out.print ("input: ");
-	while ((userInput = stdIn.readLine()) != null) {
-	    out.println(userInput);
-	    System.out.println("echo: " + in.readLine());
-            System.out.print ("input: ");
+			 lineIn = in.readLine();
+		 		System.out.println(lineIn);
+
+
+
+		 }catch(UnknownHostException e){
+					System.err.println("ServerHostName error: " + hostName);
+					System.exit(1);
+		 }catch(IOException io){
+			 System.err.println("IOException");
+			 System.exit(1);
+		 }finally{
+			 if(socket != null) socket.close();
+			 if(out != null) out.close();
+			 if(in != null) in.close();
+		 }
+
+
+
 	}
-
-	
-    }
 }

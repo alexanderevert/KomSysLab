@@ -15,33 +15,34 @@ public class ChatRoomServer{
         int port = Integer.valueOf(args[0]);
         ServerSocket socket = null;
         ArrayList<ClientThread> clientList = new ArrayList<ClientThread>();
-        Socket clientSocket = null; 
-        PrintWriter out=null;
-        BufferedReader in=null;
+        Socket clientSocket = null ;
+        BufferedReader in = null;
+        PrintWriter out = null;
+
 
         try{
-            // Bind port 
+            // Bind port
             try{
-                socket = new ServerSocket(port); 
+                socket = new ServerSocket(port);
 
             }catch (IOException e){
-                System.err.println("Failed to listen to port: " + args[0]); 
-                System.exit(1); 
+                System.err.println("Failed to listen to port: " + args[0]);
+                System.exit(1);
             }
 
             // Vänta in klient
-            
+
             System.out.println ("Waiting for connection..");
 
-            try { 
-                clientSocket = socket.accept(); 
-            } catch (IOException e) { 
-                System.err.println("Accept failed."); 
-                System.exit(1); 
-            } 
+            try {
+                clientSocket = socket.accept();
+            } catch (IOException e) {
+                System.err.println("Accept failed.");
+                System.exit(1);
+            }
 
-            out = new PrintWriter(clientSocket.getOutputStream(), true); 
-            in = new BufferedReader(new InputStreamReader( clientSocket.getInputStream())); 
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             // inte datain/dataoutputstream?
 
             // Ny klienttråd
@@ -50,15 +51,15 @@ public class ChatRoomServer{
             Thread thread = new Thread(newClient);
             thread.start();
 
+
         } catch (IOException e){
             e.printStackTrace();
         } finally{
-            if (out != null) out.close(); 
-            if (in != null) in.close(); 
-            if (clientSocket != null) clientSocket.close(); 
-            if (socket != null) socket.close(); 
+            if(out != null) out.close();
+            if(in != null) in.close();
+            if (socket != null) socket.close();
         }
-        
+
     }
 
 
