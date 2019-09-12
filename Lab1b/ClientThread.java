@@ -35,6 +35,7 @@ class ClientThread implements Runnable{
                 if((receivedMessage = getMessage()) != null){
                   int i = receivedMessage.indexOf(".");
                     if(i < 0){
+                      System.out.println("Received message from client: " + receivedMessage + "\nSending message to all other clients");
                       sendMessage(receivedMessage);
                     }else{
                         String trimmedMessage = receivedMessage.substring(i);

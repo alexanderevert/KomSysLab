@@ -24,14 +24,17 @@ public class ChatRoomClient{
 			 BufferedReader stdIn = new BufferedReader(
                                    new InputStreamReader(System.in));
       String userInput = null;
-			//(lineIn = in.readLine()) != null ||
 			String lineIn = null;
-		 	while( (userInput = stdIn.readLine()) != null ){
-				if(lineIn != null){
-					System.out.println(lineIn);
-				}else{
+		 	while(true){
+				if(in.ready()){
+					System.out.println(in.readLine());
+				}
+
+				if(stdIn.ready()){
+					userInput = stdIn.readLine();
 					out.println(userInput);
 				}
+
 			}
 
 
