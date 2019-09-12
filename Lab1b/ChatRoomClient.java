@@ -17,14 +17,22 @@ public class ChatRoomClient{
 		 Socket socket = null;
 		 PrintWriter out = null;
 		 BufferedReader in = null;
-		 String lineIn;
 		 try{
 			 socket = new Socket(hostName, port);
 			 out = new PrintWriter(socket.getOutputStream(), true);
 			 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-			 lineIn = in.readLine();
-		 		System.out.println(lineIn);
+			 BufferedReader stdIn = new BufferedReader(
+                                   new InputStreamReader(System.in));
+      String userInput = null;
+			//(lineIn = in.readLine()) != null ||
+			String lineIn = null;
+		 	while( (userInput = stdIn.readLine()) != null ){
+				if(lineIn != null){
+					System.out.println(lineIn);
+				}else{
+					out.println(userInput);
+				}
+			}
 
 
 

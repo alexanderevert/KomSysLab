@@ -31,25 +31,30 @@ public class ChatRoomServer{
             }
 
             // Vänta in klient
+            while(true){
 
-            System.out.println ("Waiting for connection..");
+              System.out.println ("Waiting for connection..");
 
-            try {
-                clientSocket = socket.accept();
-            } catch (IOException e) {
-                System.err.println("Accept failed.");
-                System.exit(1);
-            }
+              try {
+                  clientSocket = socket.accept();
+              } catch (IOException e) {
+                  System.err.println("Accept failed.");
+                  System.exit(1);
+              }
 
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            // inte datain/dataoutputstream?
+              out = new PrintWriter(clientSocket.getOutputStream(), true);
+              in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-            // Ny klienttråd
-            ClientThread newClient = new ClientThread(clientSocket, "User " + clientList.size(), in, out);
-            clientList.add(newClient);
-            Thread thread = new Thread(newClient);
-            thread.start();
+
+              // inte datain/dataoutputstream?
+
+              // Ny klienttråd
+              ClientThread newClient = new ClientThread(clientSocket, clientList.size(), in, out, clientList);
+              clientList.add(newClient);
+              Thread thread = new Thread(newClient);
+              thread.start();
+          }
+
 
 
         } catch (IOException e){
@@ -61,6 +66,5 @@ public class ChatRoomServer{
         }
 
     }
-
 
 }
