@@ -23,15 +23,16 @@ public class ChatRoomClient{
 			 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			 BufferedReader stdIn = new BufferedReader(
                                    new InputStreamReader(System.in));
-      String userInput = null;
+      		String userInput = null;
 			String lineIn = null;
-		 	while(true){
+			boolean disconnect = false;
+		 	while(!disconnect){
 				if(in.ready()){
 					System.out.println(in.readLine());
 				}
-
 				if(stdIn.ready()){
 					userInput = stdIn.readLine();
+					if(userInput.equals("/quit")) disconnect = true;
 					out.println(userInput);
 				}
 
@@ -40,9 +41,12 @@ public class ChatRoomClient{
 
 
 		 }catch(UnknownHostException e){
-					System.err.println("ServerHostName error: " + hostName);
-					System.exit(1);
-		 }catch(IOException io){
+			System.err.println("ServerHostName error: " + hostName);
+			System.exit(1);
+		 }catch(SocketException e){
+			System.err.println("SocketException");
+			System.exit(1);
+		}catch(IOException io){
 			 System.err.println("IOException");
 			 System.exit(1);
 		 }finally{

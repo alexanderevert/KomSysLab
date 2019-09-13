@@ -5,6 +5,7 @@ import java.net.*;
 class ClientThread implements Runnable{
 
     private final String WELCOME_MESSAGE = "Welcome";
+    private final String CLIENT_DISCONNECTED_MESSAGE = "CLIENT DISCONNECTED..";
     //private Scanner scanner = new Scanner(System.in);
     private String alias;
     private PrintWriter clientOut;
@@ -12,6 +13,7 @@ class ClientThread implements Runnable{
     private int id;
     private Socket socket;
     private List<ClientThread> clientThreads;
+    private boolean disconnect;
 
     public ClientThread(Socket socket, int id, BufferedReader in, PrintWriter out, List<ClientThread> clientThreads) {
         this.socket = socket;
@@ -19,6 +21,7 @@ class ClientThread implements Runnable{
         this.clientOut = out;
         this.clientThreads = clientThreads;
         this.id = id;
+        this.disconnect = false;
 
         alias = "user " + id;
     }
@@ -29,10 +32,36 @@ class ClientThread implements Runnable{
         try{
             System.out.println("Sending welcome message");
             clientOut.println(WELCOME_MESSAGE);
-
+            //TEST START
+            
+            String receivedMessage;
+            while(!disconnect && ((receivedMessage = getMessage()) != null)){
+              if(receivedMessage.startsWith("/")){
+                switch(receivedMessage.toLowerCase()){
+                  case "/quit":
+                    sendMessage(CLIENT_DISCONNECTED_MESSAGE);
+                    clientThreads.set(id,null);
+                    disconnect = true;
+                    break;
+                  case "/who":
+                    StringBuilder sb = new StringBuilder("LIST OF CONNECTED CLIENTS:\n");
+                    for(ClientThread c: clientThreads){
+                      sb.append(c.alias + "\n");
+                    }
+                    //PrintWriter pw = new PrintWriter(this.getSocket().getOutputStream(), true);
+                    clientOut.println(sb.toString());
+                }
+              }else{
+                sendMessage(receivedMessage);
+              }
+              
+            }
+            //TEST STOP
+            /*
             while(true){
                 String receivedMessage;
                 if((receivedMessage = getMessage()) != null){
+                  System.out.println(recievedMessage);
                   int i = receivedMessage.indexOf(".");
                     if(i < 0){
                       System.out.println("Received message from client: " + receivedMessage + "\nSending message to all other clients");
@@ -43,7 +72,7 @@ class ClientThread implements Runnable{
                     }
                 }
 
-            }
+            }*/
         }catch(Exception e){
           e.printStackTrace();
           System.exit(1);
@@ -66,7 +95,7 @@ class ClientThread implements Runnable{
               for(ClientThread c : clientThreads){
                 if(c!=this){
                   PrintWriter pw = new PrintWriter(c.getSocket().getOutputStream(), true);
-                  pw.println(id + "." + alias + ": " + message);
+                  pw.println(alias + ": " + message);
                 }
               }
       }
