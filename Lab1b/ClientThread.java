@@ -40,7 +40,7 @@ class ClientThread implements Runnable{
                 switch(receivedMessage.toLowerCase()){
                   case "/quit":
                     sendMessage(CLIENT_DISCONNECTED_MESSAGE);
-                    clientThreads.set(id,null);
+                    clientThreads.remove(this);
                     disconnect = true;
                     break;
                   case "/who":

@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
 import java.net.*;
+import java.util.concurrent.TimeUnit;
 
 public class ChatRoomClient{
 
@@ -32,8 +33,22 @@ public class ChatRoomClient{
 				}
 				if(stdIn.ready()){
 					userInput = stdIn.readLine();
-					if(userInput.equals("/quit")) disconnect = true;
-					out.println(userInput);
+					if(userInput.equals("/quit")) {
+						disconnect = true;
+						out.println(userInput);
+						try{
+							TimeUnit.SECONDS.sleep(1);
+						} catch(InterruptedException e){
+							e.printStackTrace();
+						}
+					}else{
+						out.println(userInput);
+					}
+					
+					
+					
+					
+					
 				}
 
 			}

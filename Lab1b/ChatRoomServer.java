@@ -18,6 +18,7 @@ public class ChatRoomServer{
         Socket clientSocket = null ;
         BufferedReader in = null;
         PrintWriter out = null;
+        int clientIdCounter = 1;
 
 
         try{
@@ -49,10 +50,11 @@ public class ChatRoomServer{
               // inte datain/dataoutputstream?
 
               // Ny klienttråd
-              ClientThread newClient = new ClientThread(clientSocket, clientList.size(), in, out, clientList);
+              ClientThread newClient = new ClientThread(clientSocket, clientIdCounter, in, out, clientList);
               clientList.add(newClient);
               Thread thread = new Thread(newClient);
               thread.start();
+              clientIdCounter++;
           }
 
 
