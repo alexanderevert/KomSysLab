@@ -5,6 +5,8 @@ import java.net.*;
 class ClientThread implements Runnable{
 
     private final String WELCOME_MESSAGE = "Welcome";
+    private final String HELP_MESSAGE = "COMMANDS: \n/nick - Change nickname\n/who - Show chat members\n/quit - End session";
+    private final String NICK_TAKEN_MESSAGE = "Nick already taken.";
     private final String CLIENT_DISCONNECTED_MESSAGE = "CLIENT DISCONNECTED..";
     //private Scanner scanner = new Scanner(System.in);
     private String alias;
@@ -37,6 +39,14 @@ class ClientThread implements Runnable{
             String receivedMessage;
             while(!disconnect && ((receivedMessage = getMessage()) != null)){
               if(receivedMessage.startsWith("/")){
+                if(receivedMessage.startsWith("/nick")){
+                  String nick = receivedMessage.substring(6, receivedMessage.length());
+                  if(!isNickTaken(nick)) {
+                    alias = nick;
+                  } else{
+                    clientOut.println(NICK_TAKEN_MESSAGE);
+                  }
+                }
                 switch(receivedMessage.toLowerCase()){
                   case "/quit":
                     sendMessage(CLIENT_DISCONNECTED_MESSAGE);
@@ -50,6 +60,8 @@ class ClientThread implements Runnable{
                     }
                     //PrintWriter pw = new PrintWriter(this.getSocket().getOutputStream(), true);
                     clientOut.println(sb.toString());
+                  case "/help":
+                  clientOut.println(HELP_MESSAGE);
                 }
               }else{
                 sendMessage(receivedMessage);
@@ -85,6 +97,13 @@ class ClientThread implements Runnable{
         e.printStackTrace();
       }
     }
+  }
+
+  private boolean isNickTaken(String nick){
+    for(ClientThread c: clientThreads){
+      if(c.alias.equals(nick)) return true;
+    }
+    return false;
   }
 
   private String getMessage() throws IOException{
