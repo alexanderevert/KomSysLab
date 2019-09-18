@@ -14,7 +14,7 @@ public class ChatRoomServer{
 
         int port = Integer.valueOf(args[0]);
         ServerSocket socket = null;
-        ArrayList<ClientThread> clientList = new ArrayList<ClientThread>();
+        List<ClientThread> clientList = Collections.synchronizedList(new ArrayList<ClientThread>());
         Socket clientSocket = null ;
         BufferedReader in = null;
         PrintWriter out = null;
