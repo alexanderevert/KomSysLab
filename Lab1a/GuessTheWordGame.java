@@ -146,16 +146,16 @@ public class GuessTheWordGame{
     }
 
     private boolean isLetterInWord(String letter){
-
+        boolean letterInWord = false;
             for(int i=0;i<word.length;i++){
                 if (Character.compare(word[i], letter.charAt(0)) == 0){
                     currentWord[i]= letter.charAt(0);
-                    return true;
+                    letterInWord=true;
                 } 
 
             }
         
-        return false;
+        return letterInWord;
     }
 
     private void sendMessage(String message, DatagramSocket dSocket, DatagramPacket packet) throws IOException{
