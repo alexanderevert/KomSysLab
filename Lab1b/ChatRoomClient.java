@@ -83,6 +83,7 @@ public class ChatRoomClient{
         while(running){
 
           if(in.ready()){
+            System.out.println();
             System.out.println(in.readLine());
           }
         }
