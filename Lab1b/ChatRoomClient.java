@@ -27,14 +27,16 @@ public class ChatRoomClient{
       		String userInput = null;
 			String lineIn = null;
 			boolean disconnect = false;
+      MessageListener listener = new MessageListener(in);
+      Thread thread = new Thread(listener);
+      thread.start();
+
 		 	while(!disconnect){
-				if(in.ready()){
-					System.out.println(in.readLine());
-				}
 				if(stdIn.ready()){
 					userInput = stdIn.readLine();
 					if(userInput.equals("/quit")) {
 						disconnect = true;
+            listener.running = false;
 						out.println(userInput);
 						try{
 							TimeUnit.SECONDS.sleep(1);
@@ -44,10 +46,8 @@ public class ChatRoomClient{
 					}else{
 						out.println(userInput);
 					}
-				}
-
-			}
-
+		     }
+    }
 		 }catch(UnknownHostException e){
 			System.err.println("ServerHostName error: " + hostName);
 			System.exit(1);
@@ -66,4 +66,31 @@ public class ChatRoomClient{
 
 
 	}
+
+  private static class MessageListener implements Runnable{
+    private BufferedReader in;
+    public boolean running;
+    private MessageListener(BufferedReader in){
+      this.in = in;
+      running = true;
+    }
+
+    @Override
+    public void run(){
+        try{
+
+
+        while(running){
+
+          if(in.ready()){
+            System.out.println(in.readLine());
+          }
+        }
+      }catch(IOException e){
+        e.printStackTrace();
+      }
+
+
+    }
+  }
 }
