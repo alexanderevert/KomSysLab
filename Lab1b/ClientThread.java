@@ -53,18 +53,19 @@ class ClientThread implements Runnable{
                 sendMessage(receivedMessage);
               }
             }
-        }catch(IOException e){
+          }catch(IOException e){
           e.printStackTrace();
-          System.exit(1);
-    }finally{
-      try{
-          clientOut.close();
-          clientIn.close();
-          socket.close();
+        //  System.exit(1);
+        }finally{
+            try{
+            clientOut.close();
+            clientIn.close();
+            socket.close();
 
-      }catch(IOException e){
-        e.printStackTrace();
-      }
+            }catch(IOException e){
+              e.printStackTrace();
+            }
+          System.exit(1);
     }
   }
 

@@ -56,9 +56,6 @@ public class ChatRoomServer{
               thread.start();
               clientIdCounter++;
           }
-
-
-
         } catch (IOException e){
             e.printStackTrace();
         } finally{

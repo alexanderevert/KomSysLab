@@ -44,22 +44,15 @@ public class ChatRoomClient{
 					}else{
 						out.println(userInput);
 					}
-					
-					
-					
-					
-					
 				}
 
 			}
-
-
 
 		 }catch(UnknownHostException e){
 			System.err.println("ServerHostName error: " + hostName);
 			System.exit(1);
 		 }catch(SocketException e){
-			System.err.println("SocketException");
+      e.printStackTrace();
 			System.exit(1);
 		}catch(IOException io){
 			 System.err.println("IOException");
