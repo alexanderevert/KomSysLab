@@ -51,18 +51,15 @@ public class GuessTheWordGame{
         long startTime;
         long waitTime;
 
-        String message =  "OK";
-        sendMessage(message.toLowerCase(), dSocket, packet);
-
-        // Inled spel, 10s för klient att bekräfta spel, andra klienter svaras med BUSY
-        startTime = System.currentTimeMillis();
-        waitTime = 10000;
+        
         while(true){
 
-            // Server tillgänglig
-            //System.out.println("Send message (OK): ");
-            //String message = scanner.nextLine().toLowerCase();
-
+            String message =  "OK";
+            sendMessage(message.toLowerCase(), dSocket, packet);
+    
+            // Inled spel, 10s för klient att bekräfta spel, andra klienter svaras med BUSY
+            startTime = System.currentTimeMillis();
+            waitTime = 10000;
 
             message = receiveMessage(this.dSocket, this.packet);
             System.out.println("Client: " + message);
@@ -95,6 +92,8 @@ public class GuessTheWordGame{
                 if(!isClientValid(packet) && message.equals(CLIENT_MESSAGE_HELLO)){
                     clientHost = packet.getAddress();
                     clientPort = packet.getPort();
+
+                    
                 }
 
             }
