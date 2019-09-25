@@ -115,6 +115,8 @@ public class GuessTheWordGame{
 
     public void playGame() throws IOException{
 
+        long startTime;
+        long waitTime;
 
         System.out.println("Playing");
 
@@ -122,8 +124,16 @@ public class GuessTheWordGame{
         String guess;
         while(!Arrays.equals(word, currentWord) && nrOfGuesses > 0){
 
+            startTime = System.currentTimeMillis();
+            waitTime = 10000;
+
             // sätt timeout väntan på client
             dSocket.receive(packet);
+
+            if((System.currentTimeMillis() - startTime) < waitTime){
+                System.out.println("Client disconnected");
+                return;
+            }
 
             if(isClientValid(packet)){
                 guess = new String(packet.getData(),0,packet.getLength());
