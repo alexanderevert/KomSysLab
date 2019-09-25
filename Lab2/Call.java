@@ -4,25 +4,27 @@ import java.io.*;
 public class Call{
 
 
-  private static String INCOMING_CALL_MENU = "INCOMING CALL... \n1. Answer Call\n 2. Reject call";
+  private static String INCOMING_CALL_MENU = "\nINCOMING CALL...\n1. Answer Call\n2. Reject call";
   private static String CALL_IP_QUESTION = "Which IP would you like to connect to?";
   private static String CALL_PORT_QUESTION = "Which port would you like to connect to?";
+  private static String START_MENU = "1. Make call\n2. Quit";
 
   private static String TRO_MESSAGE = "TRO";
 
   public static void main(String[] args){
 
     CallHandler callHandler = new CallHandler();
-
     ServerSocket serverSocket = null;
     Socket clientSocket = null ;
     BufferedReader in = null;
     PrintWriter out = null;
-
     String ipAddress = null;
     int port = 5000;
-    boolean incomingCall = false;
+    Boolean incomingCall = false;
     Scanner scanner = new Scanner(System.in);
+    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    boolean doQuit = false;
+
     try{
         // Bind port
         try{
@@ -33,49 +35,59 @@ public class Call{
             System.exit(1);
         }
 
-        // Vänta in klient
-        System.out.println ("Waiting for connection..");
-
-       IncomingCallListener callListener = new IncomingCallListener(serverSocket, incomingCall, clientSocket);
-       Thread thread = new Thread(callListener);
+        IncomingCallListener callListener = new IncomingCallListener(serverSocket, incomingCall, clientSocket);
+        Thread thread = new Thread(callListener);
         thread.start();
-        while(true){
-          System.out.println("menu");
 
-          while(true){
-            System.out.println("inc" + incomingCall);
-              if(incomingCall == true){
-                System.out.println("hallå");
+        while(!doQuit){
+          System.out.println(START_MENU);
+
+          while(!doQuit){
+
+              if(callListener.getIncomingCall()){
                 handleIncomingCall(serverSocket, clientSocket, in, out, scanner);
                 callListener.incomingCall = false;
                 break;
-            /*  }else if(scanner.hasNext()){
 
-
-                break;*/
+              }else if(br.ready()){
+                String menuChoice = br.readLine();
+                if(menuChoice.equals("1")){
+                  setConnectionDetails(ipAddress, port, br);
+                } else if(menuChoice.equals("2")){
+                  doQuit = true;
+                }
+                
+                break;
               }
+              
           }
 
       }
     } catch (IOException e){
         e.printStackTrace();
-    } finally{
+    } catch (InterruptedException e){
+      e.printStackTrace();
+    }finally{
       try{
         if(out != null) out.close();
         if(in != null) in.close();
         if (serverSocket != null) serverSocket.close();
+        if(br != null) br.close();
       }
       catch(IOException e){
         e.printStackTrace();
         System.exit(1);
       }
       if(scanner != null) scanner.close();
+      
     }
 
   }
 
   public static boolean initiateCall(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, PrintWriter out) throws IOException{
-//      clientSocket = serverSocket.accept();
+      
+    
+      //clientSocket = serverSocket.accept();
       out = new PrintWriter(clientSocket.getOutputStream(), true);
       in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
@@ -90,7 +102,16 @@ public class Call{
     return true;
 
   }
-  private static void handleIncomingCall(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, PrintWriter out, Scanner scanner) throws IOException{
+
+  public static void setConnectionDetails(String ipAddress, int port, BufferedReader br) throws IOException{
+    System.out.println(CALL_IP_QUESTION);
+    ipAddress = br.readLine();
+    System.out.println(CALL_PORT_QUESTION);
+    port = Integer.parseInt(br.readLine());
+
+  }
+
+  private static void handleIncomingCall(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, PrintWriter out, Scanner scanner) throws IOException, InterruptedException{
     System.out.println(INCOMING_CALL_MENU);
     int choice = Integer.parseInt(scanner.nextLine());
     switch(choice){
@@ -111,8 +132,8 @@ public class Call{
     public boolean running;
     public ServerSocket serverSocket;
     public Socket clientSocket;
-    public boolean incomingCall;
-    private IncomingCallListener(ServerSocket serverSocket, boolean incomingCall, Socket clientSocket){
+    public Boolean incomingCall;
+    private IncomingCallListener(ServerSocket serverSocket, Boolean incomingCall, Socket clientSocket){
       this.serverSocket = serverSocket;
       this.incomingCall = incomingCall;
       this.clientSocket = clientSocket;
@@ -126,22 +147,22 @@ public class Call{
           while(running){
             clientSocket = serverSocket.accept();
             //TODO: confirm att det är ett meddelande?
-            System.out.println(running);
+            System.out.println("running: " + running);
             incomingCall = true;
           }
       }catch(IOException e){
         e.printStackTrace();
       }
 
+    }
 
+    public boolean getIncomingCall() throws InterruptedException{
+      Thread.sleep(1);
+      return incomingCall;
     }
   }
-  /*public void setConnectionDetails() throws IOException{
-    System.out.println(CALL_IP_QUESTION);
-    ipAddress = scanner.nextLine();
-    System.out.println(CALL_PORT_QUESTION);
-    port = Integer.parseInt(scanner.nextLine());
 
-  }*/
+  
+  
 
 }
