@@ -24,6 +24,7 @@ public class Call{
     Scanner scanner = new Scanner(System.in);
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     boolean doQuit = false;
+    Thread thread = null;
 
     try{
         // Bind port
@@ -31,12 +32,12 @@ public class Call{
             serverSocket = new ServerSocket(port);
 
         }catch (IOException e){
-            System.err.println("Failed to listen to port: " + args[0]);
+            System.err.println("Failed to listen to port: " + 5000);
             System.exit(1);
         }
 
         IncomingCallListener callListener = new IncomingCallListener(serverSocket, incomingCall, clientSocket);
-        Thread thread = new Thread(callListener);
+        thread = new Thread(callListener);
         thread.start();
 
         while(!doQuit){
@@ -45,7 +46,7 @@ public class Call{
           while(!doQuit){
 
               if(callListener.getIncomingCall()){
-                handleIncomingCall(serverSocket, clientSocket, in, out, scanner);
+                handleIncomingCall(serverSocket, clientSocket, in, out, scanner, callListener);
                 callListener.incomingCall = false;
                 break;
 
@@ -56,10 +57,10 @@ public class Call{
                 } else if(menuChoice.equals("2")){
                   doQuit = true;
                 }
-                
+
                 break;
               }
-              
+
           }
 
       }
@@ -68,7 +69,9 @@ public class Call{
     } catch (InterruptedException e){
       e.printStackTrace();
     }finally{
+
       try{
+        if(thread != null) thread.interrupt();
         if(out != null) out.close();
         if(in != null) in.close();
         if (serverSocket != null) serverSocket.close();
@@ -79,15 +82,14 @@ public class Call{
         System.exit(1);
       }
       if(scanner != null) scanner.close();
-      
+
     }
 
   }
 
-  public static boolean initiateCall(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, PrintWriter out) throws IOException{
-      
-    
-      //clientSocket = serverSocket.accept();
+  public static boolean initiateCall(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, PrintWriter out, IncomingCallListener callListener) throws IOException{
+
+      clientSocket = callListener.getClient();
       out = new PrintWriter(clientSocket.getOutputStream(), true);
       in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
@@ -111,12 +113,12 @@ public class Call{
 
   }
 
-  private static void handleIncomingCall(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, PrintWriter out, Scanner scanner) throws IOException, InterruptedException{
+  private static void handleIncomingCall(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, PrintWriter out, Scanner scanner, IncomingCallListener callListener) throws IOException, InterruptedException{
     System.out.println(INCOMING_CALL_MENU);
     int choice = Integer.parseInt(scanner.nextLine());
     switch(choice){
       case 1:
-        if(initiateCall(serverSocket, clientSocket, in, out)){
+        if(initiateCall(serverSocket, clientSocket, in, out, callListener)){
             System.out.println("succesful");
         }else{
           //TODO: fixa vad som ska hända ifall misslyckad TRO
@@ -145,15 +147,38 @@ public class Call{
         try{
 
           while(running){
-            clientSocket = serverSocket.accept();
             //TODO: confirm att det är ett meddelande?
-            System.out.println("running: " + running);
-            incomingCall = true;
+        //    System.out.println("running: " + running);
+            if(incomingCall == false){
+              clientSocket = serverSocket.accept();
+              incomingCall = true;
+
+            }
+
+
+
           }
+      }
+      catch(SocketException se){
+        se.printStackTrace();
       }catch(IOException e){
         e.printStackTrace();
+
+
+      }finally{
+        try{
+          if(clientSocket != null){
+            clientSocket.close();
+          }
+        }catch(IOException e){
+          e.printStackTrace();
+        }
+
       }
 
+    }
+    public Socket getClient(){
+        return clientSocket;
     }
 
     public boolean getIncomingCall() throws InterruptedException{
@@ -162,7 +187,7 @@ public class Call{
     }
   }
 
-  
-  
+
+
 
 }
