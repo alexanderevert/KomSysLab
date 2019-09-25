@@ -7,7 +7,7 @@ import java.net.SocketException;
 import javax.xml.crypto.Data;
 
 public class guessthewordserver{
-    
+
     public static void main(String args[]) throws IOException {
 
         if (args.length != 1){
@@ -25,7 +25,7 @@ public class guessthewordserver{
 
         try{
             dSocket = new DatagramSocket(5000);
-            
+
             while(true){
 
                 System.out.println("SERVER READY!");
@@ -36,11 +36,11 @@ public class guessthewordserver{
                 // Inled spel
                 if(recMessage.equals("hello")){
                     // Spara klientinfo
-                    
+
                     System.out.println("Client: " + recMessage);
-                    
+
                     game = new GuessTheWordGame(clientHost, clientPort, word, dSocket);
-        
+
                     if(game.initiateGame()){
                         game.playGame();
                     }
@@ -48,15 +48,15 @@ public class guessthewordserver{
                 } else {
                     sendMessage("ERROR", dSocket, packet, clientHost, clientPort);
                 }
-                
+
             }
-            
+
         } catch (SocketException e){
             e.printStackTrace();
         } catch (Exception e){
             e.printStackTrace();
         }finally {
-            if (dSocket != null) dSocket.close();   
+            if (dSocket != null) dSocket.close();
         }
     }
 
@@ -83,5 +83,5 @@ public class guessthewordserver{
     }
 
 
-    
+
 }

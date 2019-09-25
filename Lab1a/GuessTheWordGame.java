@@ -85,7 +85,7 @@ public class GuessTheWordGame{
                 // Timeout, rätt klient
                 if(isClientValid(packet)){
                     sendMessage(CLIENT_TIMED_OUT, dSocket, packet);
-                    
+
                     return false;
                 }
                 // Timeout, annan klient -HELLO
@@ -95,12 +95,12 @@ public class GuessTheWordGame{
                     packet.setPort(clientPort);
                     return false;
                 }
-                
-                
+
+
             }
-            
+
         }
-            
+
 
     }
 
@@ -126,8 +126,11 @@ public class GuessTheWordGame{
             dSocket.receive(packet);
 
             if(isClientValid(packet)){
-                nrOfGuesses--;
                 guess = new String(packet.getData(),0,packet.getLength());
+                if(guess.equals("TIMED OUT")){
+                  return;
+                }
+                nrOfGuesses--;
 
                 isLetterInWord(guess);
 

@@ -69,7 +69,10 @@ public class guessthewordclient{
             }
 
         }catch (SocketTimeoutException e){
+          sendMessage("TIMED OUT", dSocket, packet);
           System.out.println("Took to long. Exiting program");
+
+
         }
         catch (SocketException e){
             e.printStackTrace();
