@@ -56,8 +56,8 @@ public class Call{
                   setConnectionDetails(ipAddress, port, br);
                 } else if(menuChoice.equals("2")){
                   doQuit = true;
+                  thread.stop();
                 }
-
                 break;
               }
 
@@ -71,7 +71,7 @@ public class Call{
     }finally{
 
       try{
-        if(thread != null) thread.interrupt();
+        if(thread != null) thread.stop();
         if(out != null) out.close();
         if(in != null) in.close();
         if (serverSocket != null) serverSocket.close();
