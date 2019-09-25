@@ -51,15 +51,14 @@ public class GuessTheWordGame{
         long startTime;
         long waitTime;
 
-        
-        while(true){
+        String message =  "OK";
+        sendMessage(message.toLowerCase(), dSocket, packet);
 
-            String message =  "OK";
-            sendMessage(message.toLowerCase(), dSocket, packet);
-    
-            // Inled spel, 10s för klient att bekräfta spel, andra klienter svaras med BUSY
-            startTime = System.currentTimeMillis();
-            waitTime = 10000;
+        // Inled spel, 10s för klient att bekräfta spel, andra klienter svaras med BUSY
+        startTime = System.currentTimeMillis();
+        waitTime = 10000;
+
+        while(true){
 
             message = receiveMessage(this.dSocket, this.packet);
             System.out.println("Client: " + message);
@@ -86,19 +85,22 @@ public class GuessTheWordGame{
                 // Timeout, rätt klient
                 if(isClientValid(packet)){
                     sendMessage(CLIENT_TIMED_OUT, dSocket, packet);
+                    
                     return false;
                 }
                 // Timeout, annan klient -HELLO
                 if(!isClientValid(packet) && message.equals(CLIENT_MESSAGE_HELLO)){
-                    clientHost = packet.getAddress();
-                    clientPort = packet.getPort();
-
-                    
+                    sendMessage(SERVER_BUSY, dSocket, packet);
+                    packet.setAddress(clientHost);
+                    packet.setPort(clientPort);
+                    return false;
                 }
-
+                
+                
             }
-
+            
         }
+            
 
     }
 

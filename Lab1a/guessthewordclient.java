@@ -22,12 +22,13 @@ public class guessthewordclient{
         String message = "";
         String returnedMessage = "";
 
+
         try{
             dSocket.connect(ip, port);
             while(!exit){
-                
+                boolean isStartInTime = false;
                 // Skicka HELLO manuellt
-                System.out.println("Send message(HELLO): ");
+                System.out.println("Send message: ");
                 message = scanner.nextLine().toLowerCase();
                 sendMessage(message, dSocket, packet);
 
@@ -42,18 +43,24 @@ public class guessthewordclient{
                 
                 if(returnedMessage.equals("ok")){
 
-                    System.out.println("Send message(START): ");
-                    message = scanner.nextLine().toLowerCase();
-                    sendMessage(message, dSocket, packet);
+                        while(isStartInTime){
 
-                    dSocket.setSoTimeout(10000);
-                    returnedMessage = receiveMessage(dSocket, packet);
-                    System.out.println("Server: " + returnedMessage);
+                        System.out.println("Send message: ");
+                        message = scanner.nextLine().toLowerCase();
+                        sendMessage(message, dSocket, packet);
 
-                    if(returnedMessage.startsWith("READY", 0)){
-                        System.out.println("Server: Guess a " + returnedMessage.charAt(6) + " letter word!");
-                        gameMode(scanner, dSocket, ip, port, packet);
-                        exit = true;
+                        dSocket.setSoTimeout(10000);
+                        returnedMessage = receiveMessage(dSocket, packet);
+                        System.out.println("Server: " + returnedMessage);
+
+                        if(returnedMessage.startsWith("READY", 0)){
+                            System.out.println("Server: Guess a " + returnedMessage.charAt(6) + " letter word!");
+                            gameMode(scanner, dSocket, ip, port, packet);
+                            exit = true;
+                        } else if(returnedMessage.equals("TIMED OUT")){
+                            isStartInTime = false;
+                        }
+
                     }
                 }else {
                     System.out.println(returnedMessage.toUpperCase());
