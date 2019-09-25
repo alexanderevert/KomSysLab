@@ -60,7 +60,6 @@ public class guessthewordclient{
                           if(returnedMessage.startsWith("READY", 0)){
                               System.out.println("Server: Guess a " + returnedMessage.charAt(6) + " letter word!");
                               gameMode(scanner, dSocket, ip, port, packet);
-                              System.out.println("??");
                               exit = true;
                               break;
                           } else if(returnedMessage.equals("TIMED OUT")){

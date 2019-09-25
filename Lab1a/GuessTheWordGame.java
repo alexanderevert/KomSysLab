@@ -128,11 +128,9 @@ public class GuessTheWordGame{
             waitTime = 10000;
             // sätt timeout väntan på client
             dSocket.receive(packet);
-            System.out.println("här är jag");
             System.out.println((System.currentTimeMillis() - startTime));
 
             if((System.currentTimeMillis() - startTime) > waitTime){
-              System.out.println("här är jag 2");
                 System.out.println("Client disconnected");
                 return;
             }
@@ -143,14 +141,11 @@ public class GuessTheWordGame{
                 nrOfGuesses--;
 
                 isLetterInWord(guess);
-                System.out.println("här är jag 3");
 
                 System.out.println("Client guess: " + guess + ", nr of guesses: " + nrOfGuesses);
                 System.out.println("Current word: " + String.valueOf(currentWord));
-                System.out.println("här är jag 4");
 
                 sendMessage(String.valueOf(currentWord) + ", guesses: " + nrOfGuesses + "/" + nrOfGuessesStat, dSocket, packet);
-                System.out.println("här är jag 5");
 
 
             }else{
