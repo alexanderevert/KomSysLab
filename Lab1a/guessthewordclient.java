@@ -10,7 +10,7 @@ public class guessthewordclient{
                 "Usage: java EchoClient <host name> <port number>");
             System.exit(1);
         }
-        
+
         boolean exit = false;
         String host = new String(args[0]);
         InetAddress ip = InetAddress.getByName(host);
@@ -39,8 +39,8 @@ public class guessthewordclient{
                     System.out.println("Server: " + returnedMessage);
                 } catch (SocketTimeoutException e){
                     returnedMessage = "SERVER TIMED OUT!";
-                } 
-                
+                }
+
                 if(returnedMessage.equals("ok")){
 
                         while(isStartInTime){
@@ -49,7 +49,7 @@ public class guessthewordclient{
                         message = scanner.nextLine().toLowerCase();
                         sendMessage(message, dSocket, packet);
 
-                        dSocket.setSoTimeout(10000);
+                        dSocket.setSoTimeout(30000);
                         returnedMessage = receiveMessage(dSocket, packet);
                         System.out.println("Server: " + returnedMessage);
 
@@ -68,18 +68,22 @@ public class guessthewordclient{
 
             }
 
-        } catch (SocketException e){
+        }catch (SocketTimeoutException e){
+          System.out.println("Took to long. Exiting program");
+        }
+        catch (SocketException e){
             e.printStackTrace();
+
         } catch (IOException e){
             e.printStackTrace();
         } finally {
-            if (dSocket != null) dSocket.close();   
-            if (scanner != null) scanner.close();  
+            if (dSocket != null) dSocket.close();
+            if (scanner != null) scanner.close();
         }
     }
 
     public static void gameMode(Scanner scanner, DatagramSocket dSocket, InetAddress serverHost, int serverPort, DatagramPacket packet) throws IOException{
-        
+
         // Spel-loop
         String guess;
         String currentWord = "";
@@ -95,8 +99,8 @@ public class guessthewordclient{
             }
 
             dSocket.setSoTimeout(100);
-            
-            try{
+
+           try{
                 currentWord = receiveMessage(dSocket, packet);
                 if(currentWord.equals("solved")){
                     currentWord = new String("game over");
@@ -107,7 +111,7 @@ public class guessthewordclient{
                 }
             } catch (SocketTimeoutException e){
             }
-            
+
         }
 
     }
