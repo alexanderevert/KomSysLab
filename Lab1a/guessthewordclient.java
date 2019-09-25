@@ -10,7 +10,7 @@ public class guessthewordclient{
                 "Usage: java EchoClient <host name> <port number>");
             System.exit(1);
         }
-
+        
         boolean exit = false;
         String host = new String(args[0]);
         InetAddress ip = InetAddress.getByName(host);
@@ -22,12 +22,13 @@ public class guessthewordclient{
         String message = "";
         String returnedMessage = "";
 
+
         try{
             dSocket.connect(ip, port);
             while(!exit){
-
+                boolean isStartInTime = true;
                 // Skicka HELLO manuellt
-                System.out.println("Send message(HELLO): ");
+                System.out.println("Send message: ");
                 message = scanner.nextLine().toLowerCase();
                 sendMessage(message, dSocket, packet);
 
@@ -38,22 +39,28 @@ public class guessthewordclient{
                     System.out.println("Server: " + returnedMessage);
                 } catch (SocketTimeoutException e){
                     returnedMessage = "SERVER TIMED OUT!";
-                }
-
+                } 
+                
                 if(returnedMessage.equals("ok")){
 
-                    System.out.println("Send message(START): ");
-                    message = scanner.nextLine().toLowerCase();
-                    sendMessage(message, dSocket, packet);
+                        while(isStartInTime){
 
-                    dSocket.setSoTimeout(10000);
-                    returnedMessage = receiveMessage(dSocket, packet);
-                    System.out.println("Server: " + returnedMessage);
+                        System.out.println("Send message: ");
+                        message = scanner.nextLine().toLowerCase();
+                        sendMessage(message, dSocket, packet);
 
-                    if(returnedMessage.startsWith("READY", 0)){
-                        System.out.println("Server: Guess a " + returnedMessage.charAt(6) + " letter word!");
-                        gameMode(scanner, dSocket, ip, port, packet);
-                        exit = true;
+                        dSocket.setSoTimeout(10000);
+                        returnedMessage = receiveMessage(dSocket, packet);
+                        System.out.println("Server: " + returnedMessage);
+
+                        if(returnedMessage.startsWith("READY", 0)){
+                            System.out.println("Server: Guess a " + returnedMessage.charAt(6) + " letter word!");
+                            gameMode(scanner, dSocket, ip, port, packet);
+                            exit = true;
+                        } else if(returnedMessage.equals("TIMED OUT")){
+                            isStartInTime = false;
+                        }
+
                     }
                 }else {
                     System.out.println(returnedMessage.toUpperCase());
@@ -66,13 +73,13 @@ public class guessthewordclient{
         } catch (IOException e){
             e.printStackTrace();
         } finally {
-            if (dSocket != null) dSocket.close();
-            if (scanner != null) scanner.close();
+            if (dSocket != null) dSocket.close();   
+            if (scanner != null) scanner.close();  
         }
     }
 
     public static void gameMode(Scanner scanner, DatagramSocket dSocket, InetAddress serverHost, int serverPort, DatagramPacket packet) throws IOException{
-
+        
         // Spel-loop
         String guess;
         String currentWord = "";
@@ -88,7 +95,7 @@ public class guessthewordclient{
             }
 
             dSocket.setSoTimeout(100);
-
+            
             try{
                 currentWord = receiveMessage(dSocket, packet);
                 if(currentWord.equals("solved")){
@@ -100,7 +107,7 @@ public class guessthewordclient{
                 }
             } catch (SocketTimeoutException e){
             }
-
+            
         }
 
     }
@@ -123,33 +130,5 @@ public class guessthewordclient{
         packet.setLength(new byte[65535].length);
         dSocket.receive(packet);
         return new String(packet.getData(),0,packet.getLength());
-    }
-    private static class IncomingCallListener implements Runnable{
-      private BufferedReader in;
-      public boolean running;
-      public boolean incomingCall;
-      private IncomingCallListener(BufferedReader in){
-        this.in = in;
-        running = true;
-        incomingCall = false;
-      }
-
-      @Override
-      public void run(){
-          try{
-
-            while(running){
-
-              if(in.ready()){
-                System.out.println();
-                System.out.println(in.readLine());
-              }
-            }
-        }catch(IOException e){
-          e.printStackTrace();
-        }
-
-
-      }
     }
 }

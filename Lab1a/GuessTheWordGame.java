@@ -13,10 +13,19 @@ public class GuessTheWordGame{
     private DatagramSocket dSocket;
     private boolean isWordComplete=false;
     private char[] currentWord;
-    private String serverBusy = new String("SERVER BUSY!");
     private int nrOfGuesses;
     private int nrOfGuessesStat;
     private Scanner scanner;
+
+    private final String SERVER_BUSY = "SERVER BUSY!";
+    private final String SERVER_READY = "READY!";
+    private final String SERVER_ERROR = "ERROR";
+
+    private final String CLIENT_MESSAGE_START = "start";
+    private final String CLIENT_MESSAGE_HELLO = "hello";
+    private final String CLIENT_TIMED_OUT = "TIMED OUT";
+
+
 
     public GuessTheWordGame(InetAddress clientHost, int clientPort, String word, DatagramSocket dSocket){
         this.clientHost = clientHost;
@@ -42,18 +51,15 @@ public class GuessTheWordGame{
         long startTime;
         long waitTime;
 
+        String message =  "OK";
+        sendMessage(message.toLowerCase(), dSocket, packet);
+
+        // Inled spel, 10s för klient att bekräfta spel, andra klienter svaras med BUSY
+        startTime = System.currentTimeMillis();
+        waitTime = 10000;
+
         while(true){
 
-            // Server tillgänglig
-            //System.out.println("Send message (OK): ");
-            //String message = scanner.nextLine().toLowerCase();
-            String message =  "OK";
-            sendMessage(message.toLowerCase(), dSocket, packet);
-        
-            // Inled spel, 10s för klient att bekräfta spel, andra klienter svaras med BUSY
-            startTime = System.currentTimeMillis();
-            waitTime = 10000;
-                      
             message = receiveMessage(this.dSocket, this.packet);
             System.out.println("Client: " + message);
 
@@ -61,37 +67,41 @@ public class GuessTheWordGame{
             if((System.currentTimeMillis() - startTime) < waitTime){
 
                 // Klient, meddelande och timeout är ok
-                if(isClientValid(packet) && message.equals("start")){
-                    sendMessage(new String("READY " + this.word.length), dSocket, packet);
+                if(isClientValid(packet) && message.equals(CLIENT_MESSAGE_START)){
+                    sendMessage(new String(SERVER_READY + this.word.length), dSocket, packet);
                     return true;
-                } 
+                }
                 // Klient skickar fel
-                else if(isClientValid(packet) && !message.equals("start")){
-                    sendMessage("ERROR", dSocket, packet);
-                    return false;
-                } 
+                else if(isClientValid(packet) && !message.equals(CLIENT_MESSAGE_START)){
+                    sendMessage(SERVER_ERROR, dSocket, packet);
+                }
                 // Fel klient
                 else {
-                    sendMessage("BUSY", dSocket, packet);
-                    return false;
+                    sendMessage(SERVER_BUSY, dSocket, packet);
+                //    return false;
                 }
 
             } else {
                 // Timeout, rätt klient
                 if(isClientValid(packet)){
-                    sendMessage("TIMED OUT", dSocket, packet);
+                    sendMessage(CLIENT_TIMED_OUT, dSocket, packet);
+                    
                     return false;
                 }
                 // Timeout, annan klient -HELLO
-                if(!isClientValid(packet) && message.equals("hello")){
-                    clientHost = packet.getAddress();
-                    clientPort = packet.getPort();
+                if(!isClientValid(packet) && message.equals(CLIENT_MESSAGE_HELLO)){
+                    sendMessage(SERVER_BUSY, dSocket, packet);
+                    packet.setAddress(clientHost);
+                    packet.setPort(clientPort);
+                    return false;
                 }
+                
                 
             }
             
-        } 
-        
+        }
+            
+
     }
 
     private boolean isClientValid(DatagramPacket packet){
@@ -100,18 +110,18 @@ public class GuessTheWordGame{
         }else{
             return false;
         }
-        
+
     }
 
     public void playGame() throws IOException{
 
-        
+
         System.out.println("Playing");
 
         //Game loop
         String guess;
         while(!Arrays.equals(word, currentWord) && nrOfGuesses > 0){
-            
+
             // sätt timeout väntan på client
             dSocket.receive(packet);
 
@@ -127,8 +137,8 @@ public class GuessTheWordGame{
                 sendMessage(String.valueOf(currentWord) + ", guesses: " + nrOfGuesses + "/" + nrOfGuessesStat, dSocket, packet);
 
             }else{
-                packet.setData(serverBusy.getBytes());
-                packet.setLength(serverBusy.getBytes().length);
+                packet.setData(SERVER_BUSY.getBytes());
+                packet.setLength(SERVER_BUSY.getBytes().length);
                 dSocket.send(packet);
             }
 
@@ -142,20 +152,20 @@ public class GuessTheWordGame{
             System.out.println("OUT OF GUESSES!");
 
         }
-        
+
     }
 
     private boolean isLetterInWord(String letter){
-
+        boolean letterInWord = false;
             for(int i=0;i<word.length;i++){
                 if (Character.compare(word[i], letter.charAt(0)) == 0){
                     currentWord[i]= letter.charAt(0);
-                    return true;
-                } 
+                    letterInWord=true;
+                }
 
             }
-        
-        return false;
+
+        return letterInWord;
     }
 
     private void sendMessage(String message, DatagramSocket dSocket, DatagramPacket packet) throws IOException{
