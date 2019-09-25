@@ -9,7 +9,9 @@ public class Call{
   private static String CALL_PORT_QUESTION = "Which port would you like to connect to?";
   private static String START_MENU = "1. Make call\n2. Quit";
 
+  private static String INVITE_MESSAGE = "INVITE";
   private static String TRO_MESSAGE = "TRO";
+  private static String ACK_MESSAGE = "ACK";
 
   public static void main(String[] args){
 
@@ -97,7 +99,7 @@ public class Call{
 
       //TODO: sätt en timeout
 
-      if(!in.readLine().equals("ack")){
+      if(!in.readLine().equals(ACK_MESSAGE)){
           return false;
       }
 
@@ -110,6 +112,35 @@ public class Call{
     ipAddress = br.readLine();
     System.out.println(CALL_PORT_QUESTION);
     port = Integer.parseInt(br.readLine());
+
+  }
+
+  public static boolean makeCall(String ipAddress, int port, Socket socket, PrintWriter out, BufferedReader in) throws IOException{
+      socket = new Socket(ipAddress, port);
+      out = new PrintWriter(socket.getOutputStream(), true);
+      in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+      System.out.println("Sending invite");
+      out.println(INVITE_MESSAGE);
+      String message = null;
+      socket.setSoTimeout(10000);
+      try{
+        message = in.readLine();
+
+      }catch(SocketTimeoutException e){
+        System.out.println("No answer");
+        return false;
+      }
+
+      if(message.equals(TRO_MESSAGE)){
+        System.out.println("TRO received, sending ACK");
+        out.println(ACK_MESSAGE);
+        return true;
+      }
+
+      System.out.println("No TRO received");
+      return false;
+
 
   }
 
