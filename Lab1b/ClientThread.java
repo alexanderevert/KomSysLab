@@ -42,30 +42,42 @@ class ClientThread implements Runnable{
         try{
             System.out.println(SERVER_WELCOME_MESSAGE_INFO);
             clientOut.println(WELCOME_MESSAGE);
-            //TEST START
+
+
+            //TEST START{
+
 
             String receivedMessage;
+
             while(!disconnect && ((receivedMessage = getMessage()) != null)){
-              if(receivedMessage.startsWith("/")){
-                handleCommands(receivedMessage);
+
+                if(receivedMessage.startsWith("/")){
+                  handleCommands(receivedMessage);
+                  }
+                else{
+                  sendMessage(receivedMessage);
                 }
-              else{
-                sendMessage(receivedMessage);
-              }
+
+
             }
           }catch(IOException e){
-          e.printStackTrace();
+            System.out.println("Client disconnected. Sending messages");
+
+
         //  System.exit(1);
         }finally{
+
+          clientThreads.remove(this);
+
             try{
-            clientOut.close();
-            clientIn.close();
-            socket.close();
+              sendMessage("Client: " + alias + " disconnected");
+              clientOut.close();
+              clientIn.close();
+              socket.close();
 
             }catch(IOException e){
               e.printStackTrace();
             }
-          System.exit(1);
     }
   }
 
