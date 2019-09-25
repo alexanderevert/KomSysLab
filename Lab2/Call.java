@@ -55,7 +55,8 @@ public class Call{
               }else if(br.ready()){
                 String menuChoice = br.readLine();
                 if(menuChoice.equals("1")){
-                  setConnectionDetails(ipAddress, port, br);
+                  ipAddress = setConnectionDetails(ipAddress, port, br);
+                  makeCall(ipAddress, port, clientSocket, out, in);
                 } else if(menuChoice.equals("2")){
                   doQuit = true;
                   thread.stop();
@@ -94,28 +95,32 @@ public class Call{
       clientSocket = callListener.getClient();
       out = new PrintWriter(clientSocket.getOutputStream(), true);
       in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-      out.println(TRO_MESSAGE);
-
-      //TODO: sätt en timeout
+      String message = in.readLine();
+      if(message.equals("INVITE")){
+        out.println(TRO_MESSAGE);
+      }else{
+        return false;
+      }
 
       if(!in.readLine().equals(ACK_MESSAGE)){
           return false;
       }
-
     return true;
 
   }
 
-  public static void setConnectionDetails(String ipAddress, int port, BufferedReader br) throws IOException{
+  public static String setConnectionDetails(String ipAddress, int port, BufferedReader br) throws IOException{
     System.out.println(CALL_IP_QUESTION);
     ipAddress = br.readLine();
     System.out.println(CALL_PORT_QUESTION);
     port = Integer.parseInt(br.readLine());
 
+    return ipAddress;
   }
 
   public static boolean makeCall(String ipAddress, int port, Socket socket, PrintWriter out, BufferedReader in) throws IOException{
+      System.out.println("Calling IP: " + ipAddress + ", port: " + port);
+
       socket = new Socket(ipAddress, port);
       out = new PrintWriter(socket.getOutputStream(), true);
       in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
