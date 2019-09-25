@@ -26,7 +26,7 @@ public class guessthewordclient{
         try{
             dSocket.connect(ip, port);
             while(!exit){
-                boolean isStartInTime = false;
+                boolean isStartInTime = true;
                 // Skicka HELLO manuellt
                 System.out.println("Send message: ");
                 message = scanner.nextLine().toLowerCase();
