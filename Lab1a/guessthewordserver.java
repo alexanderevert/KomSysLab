@@ -24,7 +24,7 @@ public class guessthewordserver{
         DatagramPacket packet = new DatagramPacket(data, data.length);
 
         try{
-            dSocket = new DatagramSocket(5000);
+            dSocket = new DatagramSocket(5001);
 
             while(true){
 

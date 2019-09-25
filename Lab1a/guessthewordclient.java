@@ -33,7 +33,7 @@ public class guessthewordclient{
                 sendMessage(message, dSocket, packet);
 
                 // Vänta OK, Timeout om inget svar från server på 10s
-                dSocket.setSoTimeout(10000);
+                dSocket.setSoTimeout(300);
                 try{
                     returnedMessage = receiveMessage(dSocket, packet);
                     System.out.println("Server: " + returnedMessage);
@@ -45,21 +45,27 @@ public class guessthewordclient{
 
                         while(isStartInTime){
 
-                        System.out.println("Send message: ");
-                        message = scanner.nextLine().toLowerCase();
-                        sendMessage(message, dSocket, packet);
+                          System.out.println("Send message: ");
+                          message = scanner.nextLine().toLowerCase();
+                          sendMessage(message, dSocket, packet);
 
-                        dSocket.setSoTimeout(30000);
-                        returnedMessage = receiveMessage(dSocket, packet);
-                        System.out.println("Server: " + returnedMessage);
+                          dSocket.setSoTimeout(300);
+                          try{
+                            returnedMessage = receiveMessage(dSocket, packet);
+                            System.out.println("Server: " + returnedMessage);
+                          }catch (SocketTimeoutException e){
 
-                        if(returnedMessage.startsWith("READY", 0)){
-                            System.out.println("Server: Guess a " + returnedMessage.charAt(6) + " letter word!");
-                            gameMode(scanner, dSocket, ip, port, packet);
-                            exit = true;
-                        } else if(returnedMessage.equals("TIMED OUT")){
-                            isStartInTime = false;
-                        }
+                          }
+
+                          if(returnedMessage.startsWith("READY", 0)){
+                              System.out.println("Server: Guess a " + returnedMessage.charAt(6) + " letter word!");
+                              gameMode(scanner, dSocket, ip, port, packet);
+                              System.out.println("??");
+                              exit = true;
+                              break;
+                          } else if(returnedMessage.equals("TIMED OUT")){
+                              isStartInTime = false;
+                          }
 
                     }
                 }else {
@@ -67,11 +73,6 @@ public class guessthewordclient{
                 }
 
             }
-
-        }catch (SocketTimeoutException e){
-          sendMessage("TIMED OUT", dSocket, packet);
-          System.out.println("Took to long. Exiting program");
-
 
         }
         catch (SocketException e){
@@ -101,7 +102,7 @@ public class guessthewordclient{
                 System.out.println("Current word: " + currentWord);
             }
 
-            dSocket.setSoTimeout(100);
+            dSocket.setSoTimeout(300);
 
            try{
                 currentWord = receiveMessage(dSocket, packet);
@@ -111,6 +112,7 @@ public class guessthewordclient{
                 } else if(currentWord.equals("out of guesses")){
                     currentWord = new String("game over");
                     System.out.println("OUT OF GUESSES!" + "\nShutting down..");
+                    return;
                 }
             } catch (SocketTimeoutException e){
             }
