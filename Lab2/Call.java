@@ -4,7 +4,7 @@ import java.io.*;
 public class Call{
 
 
-  private static String INCOMING_CALL_MENU = "\nINCOMING CALL...\n1. Answer Call\n2. Reject call";
+  private static String INCOMING_CALL_MENU = "\nINCOMING CALL (INVITE)...\n1. Answer Call\n2. Reject call";
   private static String CALL_IP_QUESTION = "Which IP would you like to connect to?";
   private static String CALL_PORT_QUESTION = "Which port would you like to connect to?";
   private static String START_MENU = "1. Make call\n2. Quit";
@@ -13,20 +13,27 @@ public class Call{
   private static String TRO_MESSAGE = "TRO";
   private static String ACK_MESSAGE = "ACK";
 
+
   public static void main(String[] args){
 
-    CallHandler callHandler = new CallHandler();
     ServerSocket serverSocket = null;
     Socket clientSocket = null ;
     BufferedReader in = null;
     PrintWriter out = null;
     String ipAddress = null;
     int port = 5000;
+
+    CallHandler callHandler = new CallHandler(out);
+
+    boolean isServer = true;
     Boolean incomingCall = false;
     Scanner scanner = new Scanner(System.in);
-    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
     boolean doQuit = false;
-    Thread thread = null;
+    Thread callListenerThread = null;
+    Thread messageListenerThread = null;
+
+    PeerMessageListener peerMessageListener = null;
 
     try{
         // Bind port
@@ -39,14 +46,45 @@ public class Call{
         }
 
         IncomingCallListener callListener = new IncomingCallListener(serverSocket, incomingCall, clientSocket);
-        thread = new Thread(callListener);
-        thread.start();
+        peerMessageListener = new PeerMessageListener(serverSocket, clientSocket, isServer);
+        messageListenerThread = new Thread(peerMessageListener, out);
+        messageListenerThread.start();
+        callListenerThread = new Thread(callListener);
+        callListenerThread.start();
 
         while(!doQuit){
           System.out.println(START_MENU);
 
           while(!doQuit){
+            String inSignal = scanner.nextLine();
+            inSignal.toLowerCase();
 
+              switch(inSignal){
+                case "call":
+                    callHandler.processNextEvent(CallEvent.USER_WANTS_TO_INVITE);
+                    isServer = false;
+                    callListener.setIsServer(isServer);
+
+                break;
+                case "answer":
+                    callHandler.processNextEvent(CallEvent.TRO);
+                    isServer = true;
+                    callListener.setIsServer(isServer);
+                break;
+                case "hangup":
+                  callHandler.processNextEvent(CallEvent.USER_WANTS_TO_QUIT);
+                break;
+                case "quit":
+                  doQuit = true;
+                break;
+                case "reject":
+                break;
+                default: break;
+
+            }
+
+
+              /*
               if(callListener.getIncomingCall()){
                 handleIncomingCall(serverSocket, clientSocket, in, out, scanner, callListener);
                 callListener.incomingCall = false;
@@ -63,7 +101,7 @@ public class Call{
                 }
                 break;
               }
-
+              */
           }
 
       }
@@ -109,24 +147,32 @@ public class Call{
 
   }
 
-  public static String setConnectionDetails(String ipAddress, int port, BufferedReader br) throws IOException{
-    System.out.println(CALL_IP_QUESTION);
-    ipAddress = br.readLine();
-    System.out.println(CALL_PORT_QUESTION);
-    port = Integer.parseInt(br.readLine());
 
-    return ipAddress;
-  }
+  public static boolean sendInvite(Socket socket, PrintWriter out, BufferedReader stdIn, BufferedReader in) {
 
-  public static boolean makeCall(String ipAddress, int port, Socket socket, PrintWriter out, BufferedReader in) throws IOException{
-      System.out.println("Calling IP: " + ipAddress + ", port: " + port);
+      System.out.println(CALL_IP_QUESTION);
+      try{
+        String peerIpAddress = stdIn.readLine();
+        System.out.println(CALL_PORT_QUESTION);
+        int peerPort = Integer.parseInt(stdIn.readLine());
 
-      socket = new Socket(ipAddress, port);
-      out = new PrintWriter(socket.getOutputStream(), true);
-      in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        System.out.println("Sending invite: " +  peerIpAddress +  ", port: " + peerPort);
 
-      System.out.println("Sending invite");
-      out.println(INVITE_MESSAGE);
+        socket = new Socket(ipAddress, port);
+        out = new PrintWriter(socket.getOutputStream(), true);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        System.out.println("Sending invite");
+        out.println(INVITE_MESSAGE);
+      }catch(IOException e){
+        System.out.println("Could not send invite to: " + peerIpAddress + ": " + peerPort);
+        return false;
+      }
+
+      return true;
+
+
+
       String message = null;
       socket.setSoTimeout(10000);
       try{
@@ -148,6 +194,8 @@ public class Call{
 
 
   }
+
+
 
   private static void handleIncomingCall(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, PrintWriter out, Scanner scanner, IncomingCallListener callListener) throws IOException, InterruptedException{
     System.out.println(INCOMING_CALL_MENU);
@@ -188,7 +236,6 @@ public class Call{
             if(incomingCall == false){
               clientSocket = serverSocket.accept();
               incomingCall = true;
-
             }
 
 
@@ -224,6 +271,58 @@ public class Call{
   }
 
 
+  private static class PeerMessageListener implements Runnable{
+      private ServerSocket serverSocket;
+      private Socket clientSocket;
+      private boolean isServer;
+      private BufferedReader in;
+      private boolean inCall;
+      private boolean awaitingTroAck;
+      private CallHandler callHandler;
+      private PrintWriter out;
+      private PeerMessageListener(ServerSocket serverSocket, Socket clientSocket, boolean isServer, BufferedReader in, CallHandler callHandler, PrintWriter out){
+            this.serverSocket = serverSocket;
+            this.clientSocket = clientSocket;
+            this.isServer = isServer;
+            this.in = in;
+            inCall = false;
+            this.callHandler = callHandler;
+            this.out = out;
+      }
+
+      @Override
+      public void run(){
+            while(true){
+
+                  if(inCall){
+                    try{
+                      serverSocket.setSoTimeout(300);
+                    try{
+                      String message = in.readLine();
+                      if(message.equals("bye")){
+                        callHandler.processNextEvent(CallEvent.BYE, out);
+                      }
+                      }catch(SocketTimeoutException e){
+
+                      }
+                    }catch(IOException e){
+
+                    }
+                  }else if(awaitingTroAck){
 
 
+                  }
+
+
+
+            }
+
+        }
+      public void setIsServer(boolean isServer){
+        this.isServer = isServer;
+      }
+      public void setInCall(boolean inCall){
+        this.inCall = inCall;
+      }
+      }
 }

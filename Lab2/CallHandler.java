@@ -2,33 +2,61 @@
 
 public class CallHandler{
   public enum CallEvent{
-    CALL_INITIATE,
-    CALL_END,
-    CALL_ANSWER,
+    INVITE,
+    TRO,
+    ACK,
+    TIMEOUT,
+    BYE,
+    OK,
+    USER_WANTS_TO_INVITE,
+    USER_WANTS_TO_QUIT,
   }
   private CallState currentState;
-
-  public CallHandler(){
+  private PrintWriter out;
+  public CallHandler(PrintWriter out){
     currentState = new CallStateFree();
-
+    this.out = out;
   }
 
   public void processNextEvent(CallEvent event){
     switch(event){
-      case CALL_INITIATE:
+      case CallEvent.INVITE:
+      currentState = currentState.receivedInvite(out);
+      break;
 
-      //TODO: skicka invite innan man sätts i state 
-      currentState = currentState.userWantsToInvite();
-      break;
-      case CALL_END:
-      currentState = currentState.userWantsToQuit();
-      break;
-      case CALL_ANSWER:
+      case CallEvent.TRO:
       currentState = currentState.answerCall();
       break;
+
+      case CallEvent.ACK:
+      currentState = currentState.receivedAck();
+      break;
+
+      case CallEvent.TIMEOUT:
+      currentState = currentState.timedOut();
+      break;
+
+      case CallEvent.BYE:
+      currentState = currentState.receivedBye();
+      break;
+
+      case CallEvent.OK:
+      currentState = currentState.receivedOk();
+      break;
+
+      case CallEvent.USER_WANTS_TO_INVITE:
+      //TODO: skicka invite innan man sätts i state
+      currentState = currentState.userWantsToInvite();
+      break;
+
+      case CallEvent.USER_WANTS_TO_QUIT:
+      currentState = currentState.userWantsToQuit();
+      break;
+
 
       default: break;
     }
   }
+
 
 }

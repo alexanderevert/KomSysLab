@@ -1,16 +1,12 @@
 
 public class CallStateWaitTRO extends CallStateBusy{
     public CallStateWaitTRO(){
-      waitTRO();
-      troReceived();
-    }
-
-    public CallEvent troReceived(){
-      sendAck();
-
 
     }
-    waitTro();
 
+    public CallState timedOut(){
+      System.out.println("Going to state CallStateFree");
+      return new CallStateFree();
+    }
 
 }
