@@ -1,6 +1,6 @@
 
 
-public class CallStateWaitAck implements CallStateBusy{
+public class CallStateWaitAck extends CallStateBusy{
   public CallStateWaitAck(){
   }
 
@@ -12,6 +12,10 @@ public class CallStateWaitAck implements CallStateBusy{
   public CallState timedOut(){
     System.out.println("Going to state CallStateFree");
     return new CallStateFree();
+  }
+
+  public void printState(){
+	  System.out.println("State: Waiting ACK");
   }
 
 }

@@ -1,6 +1,6 @@
 
 
-public class CallStateWaitQuitOK implements CallStateBusy{
+public class CallStateWaitQuitOK extends CallStateBusy{
   public CallStateWaitQuitOK(){
   }
 
@@ -11,5 +11,9 @@ public class CallStateWaitQuitOK implements CallStateBusy{
   public CallState receivedOk(){
     System.out.println("Going to state CallStateFree");
     return new CallStateFree();
+  }
+
+  public void printState(){
+	  System.out.println("State: Wainting quit OK");
   }
 }

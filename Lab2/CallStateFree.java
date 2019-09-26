@@ -1,3 +1,7 @@
+import java.util.*;
+import java.net.*;
+import java.io.*;
+
 
 public class CallStateFree extends CallState{
   public CallStateFree(){
@@ -14,6 +18,10 @@ public class CallStateFree extends CallState{
     System.out.println("Going to state CallStateWaitAck");
     //TODO: skicka tro
     return new CallStateWaitAck();
+  }
+
+  public void printState(){
+	  System.out.println("State: Free");
   }
 
 

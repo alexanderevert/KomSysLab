@@ -16,12 +16,18 @@ public class Call{
 
   public static void main(String[] args){
 
+    if (args.length != 1) {
+      System.err.println(
+          "Usage: java Call <port number>");
+      System.exit(1);
+  }
+
     ServerSocket serverSocket = null;
     Socket clientSocket = null ;
     BufferedReader in = null;
     PrintWriter out = null;
     String ipAddress = null;
-    int port = 5000;
+    int port = Integer.parseInt(args[0]);
 
     CallHandler callHandler = new CallHandler(out);
 
@@ -46,8 +52,8 @@ public class Call{
         }
 
         IncomingCallListener callListener = new IncomingCallListener(serverSocket, incomingCall, clientSocket);
-        peerMessageListener = new PeerMessageListener(serverSocket, clientSocket, isServer);
-        messageListenerThread = new Thread(peerMessageListener, out);
+        peerMessageListener = new PeerMessageListener(serverSocket, clientSocket, isServer, in, callHandler, out);
+        messageListenerThread = new Thread(peerMessageListener);
         messageListenerThread.start();
         callListenerThread = new Thread(callListener);
         callListenerThread.start();
@@ -61,18 +67,18 @@ public class Call{
 
               switch(inSignal){
                 case "call":
-                    callHandler.processNextEvent(CallEvent.USER_WANTS_TO_INVITE);
+                    callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_INVITE);
                     isServer = false;
-                    callListener.setIsServer(isServer);
+                    peerMessageListener.setIsServer(isServer);
 
                 break;
                 case "answer":
-                    callHandler.processNextEvent(CallEvent.TRO);
+                    callHandler.processNextEvent(CallHandler.CallEvent.TRO);
                     isServer = true;
-                    callListener.setIsServer(isServer);
+                    peerMessageListener.setIsServer(isServer);
                 break;
                 case "hangup":
-                  callHandler.processNextEvent(CallEvent.USER_WANTS_TO_QUIT);
+                  callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_QUIT);
                 break;
                 case "quit":
                   doQuit = true;
@@ -105,18 +111,21 @@ public class Call{
           }
 
       }
-    } catch (IOException e){
+    } catch (Exception e){
+      e.printStackTrace();
+    }/*catch (IOException e){
         e.printStackTrace();
     } catch (InterruptedException e){
       e.printStackTrace();
-    }finally{
+    }*/finally{
 
       try{
-        if(thread != null) thread.stop();
+        if(callListenerThread != null) callListenerThread.stop();
+        if(messageListenerThread != null) messageListenerThread.stop();
         if(out != null) out.close();
         if(in != null) in.close();
         if (serverSocket != null) serverSocket.close();
-        if(br != null) br.close();
+        if(stdIn != null) stdIn.close();
       }
       catch(IOException e){
         e.printStackTrace();
@@ -148,7 +157,7 @@ public class Call{
   }
 
 
-  public static boolean sendInvite(Socket socket, PrintWriter out, BufferedReader stdIn, BufferedReader in) {
+  public static boolean sendInvite(Socket socket, PrintWriter out, BufferedReader stdIn, BufferedReader in) throws IOException, SocketException{
 
       System.out.println(CALL_IP_QUESTION);
       try{
@@ -158,20 +167,16 @@ public class Call{
 
         System.out.println("Sending invite: " +  peerIpAddress +  ", port: " + peerPort);
 
-        socket = new Socket(ipAddress, port);
+        socket = new Socket(peerIpAddress, peerPort);
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         System.out.println("Sending invite");
         out.println(INVITE_MESSAGE);
       }catch(IOException e){
-        System.out.println("Could not send invite to: " + peerIpAddress + ": " + peerPort);
+        System.out.println("Could not send invite to IP / port");
         return false;
       }
-
-      return true;
-
-
 
       String message = null;
       socket.setSoTimeout(10000);
@@ -300,7 +305,7 @@ public class Call{
                     try{
                       String message = in.readLine();
                       if(message.equals("bye")){
-                        callHandler.processNextEvent(CallEvent.BYE, out);
+                        callHandler.processNextEvent(CallHandler.CallEvent.BYE);
                       }
                       }catch(SocketTimeoutException e){
 
