@@ -16,17 +16,18 @@ public class CallHandler{
   }
 
   private CallState currentState;
-  private PrintWriter out;
+  //private PrintWriter out;
   
   public CallHandler(PrintWriter out){
     currentState = new CallStateFree();
-    this.out = out;
+    //this.out = out;
+    currentState.out = out;
   }
 
   public void processNextEvent(CallEvent event){
     switch(event){
       case INVITE:
-      currentState = currentState.receivedInvite(out);
+      currentState = currentState.receivedInvite();
       break;
 
       case TRO:
@@ -61,6 +62,10 @@ public class CallHandler{
 
       default: break;
     }
+  }
+
+  public void setOutPw(PrintWriter out){
+    currentState.out = out;
   }
 
   public void printState() {

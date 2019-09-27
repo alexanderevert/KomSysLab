@@ -16,8 +16,9 @@ public class CallStateBusy extends CallState{
     return this;
   }
   */
-  public CallState receivedInvite(PrintWriter pr){
+  public CallState receivedInvite(){
     //TODO: skicka busy
+    // ex out.println(); PrintWriter out inlagd i superclassen CallState, sätts i Handlern
     System.out.println("Peer busy, already in call");
     return this;
   }

@@ -7,14 +7,13 @@ public class CallStateInSession extends CallState{
 
   }
 
-  public CallState receivedBye(PrintWriter out){
+  public CallState receivedBye(){
     System.out.println("Going to state CallStateFree");
-
     //TODO: skicka ok
     return new CallStateFree();
   }
 
-  public CallState userWantsToQuit(PrintWriter out){
+  public CallState userWantsToQuit(){
     //TODO: skicka bye
     System.out.println("Going to state CallStateWaitQuitOK");
     return new CallStateWaitQuitOK();

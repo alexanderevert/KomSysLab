@@ -3,18 +3,26 @@ import java.net.*;
 import java.io.*;
 
 
-public class CallStateFree extends CallState{
+public class CallStateFree extends CallState {
   public CallStateFree(){
 
   }
 
   public CallState userWantsToInvite(){
-    System.out.println("Going to state CallStateWaitTRO");
 
+  try{
+      out.println("invite");
+  }catch(Exception e){
+      System.out.println("Failed to send invite");
+      e.printStackTrace();
+  }
+    
+
+    System.out.println("Going to state CallStateWaitTRO");
     return new CallStateWaitTRO();
   }
 
-  public CallState receivedInvite(PrintWriter out){
+  public CallState receivedInvite(){
     System.out.println("Going to state CallStateWaitAck");
     //TODO: skicka tro
     return new CallStateWaitAck();

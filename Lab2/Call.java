@@ -4,10 +4,10 @@ import java.io.*;
 public class Call{
 
 
-  private static String INCOMING_CALL_MENU = "\nINCOMING CALL (INVITE)...\n1. Answer Call\n2. Reject call";
+  private static String INCOMING_CALL_MENU = "\n INCOMING CALL(INVITE)...\n Answer / Reject?";
   private static String CALL_IP_QUESTION = "Which IP would you like to connect to?";
   private static String CALL_PORT_QUESTION = "Which port would you like to connect to?";
-  private static String START_MENU = "1. Make call\n2. Quit";
+  private static String START_MENU = "*************************\n 1. Make call(call)\n 2. Answer call(answer)\n 3. Reject call(reject)\n 4 .Hang up(hangup)\n 5 .Quit(quit)\n*************************";
 
   private static String INVITE_MESSAGE = "INVITE";
   private static String TRO_MESSAGE = "TRO";
@@ -62,23 +62,29 @@ public class Call{
           System.out.println(START_MENU);
 
           while(!doQuit){
-            String inSignal = scanner.nextLine();
+            String inSignal = scanner.nextLine(); 
+            String callArr[] = inSignal.split(" ", 3);
+            inSignal = callArr[0];
             inSignal.toLowerCase();
-
               switch(inSignal){
                 case "call":
+                    
+                    clientSocket = new Socket(callArr[1], Integer.parseInt(callArr[2]));
+                    out = new PrintWriter(clientSocket.getOutputStream(), true);
+                    callHandler.setOutPw(out);
                     callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_INVITE);
                     isServer = false;
                     peerMessageListener.setIsServer(isServer);
 
                 break;
                 case "answer":
+                    // if incommingCall==true?
                     callHandler.processNextEvent(CallHandler.CallEvent.TRO);
                     isServer = true;
                     peerMessageListener.setIsServer(isServer);
                 break;
                 case "hangup":
-                  callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_QUIT);
+                    callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_QUIT);
                 break;
                 case "quit":
                   doQuit = true;
@@ -137,6 +143,7 @@ public class Call{
 
   }
 
+
   public static boolean initiateCall(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, PrintWriter out, IncomingCallListener callListener) throws IOException{
 
       clientSocket = callListener.getClient();
@@ -156,7 +163,7 @@ public class Call{
 
   }
 
-
+  // ta bort send invite?
   public static boolean sendInvite(Socket socket, PrintWriter out, BufferedReader stdIn, BufferedReader in) throws IOException, SocketException{
 
       System.out.println(CALL_IP_QUESTION);
@@ -240,6 +247,7 @@ public class Call{
         //    System.out.println("running: " + running);
             if(incomingCall == false){
               clientSocket = serverSocket.accept();
+              System.out.println(INCOMING_CALL_MENU);
               incomingCall = true;
             }
 

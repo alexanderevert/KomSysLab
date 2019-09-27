@@ -131,7 +131,7 @@ public class GuessTheWordGame{
             System.out.println((System.currentTimeMillis() - startTime));
 
             if((System.currentTimeMillis() - startTime) > waitTime){
-                System.out.println("Client disconnected");
+                System.out.println("Client disconnected, try again");
                 return;
             }
 
