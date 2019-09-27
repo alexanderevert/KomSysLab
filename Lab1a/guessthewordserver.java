@@ -42,7 +42,15 @@ public class guessthewordserver{
                     game = new GuessTheWordGame(clientHost, clientPort, word, dSocket);
 
                     if(game.initiateGame()){
-                        game.playGame();
+                      game.playGame();
+                      while(game.getHasNewClient() == true){
+                        game.setHasNewClient(false);
+                        if(game.initiateGame()){
+                          game.playGame();
+                        }
+
+                      }
+
                     }
 
                 } else {

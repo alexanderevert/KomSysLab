@@ -16,6 +16,7 @@ public class GuessTheWordGame{
     private int nrOfGuesses;
     private int nrOfGuessesStat;
     private Scanner scanner;
+    private boolean hasNewClient = false;
 
     private final String SERVER_BUSY = "SERVER BUSY!";
     private final String SERVER_READY = "READY!";
@@ -104,13 +105,21 @@ public class GuessTheWordGame{
 
     }
 
-    private boolean isClientValid(DatagramPacket packet){
+    public boolean isClientValid(DatagramPacket packet){
         if(this.clientPort == packet.getPort() && this.clientHost.equals(packet.getAddress())){
             return true;
         }else{
             return false;
         }
 
+    }
+
+    public boolean getHasNewClient(){
+      return hasNewClient;
+    }
+
+    public void setHasNewClient(boolean hasNewClient){
+      this.hasNewClient = hasNewClient;
     }
 
     public void playGame() throws IOException{
@@ -131,7 +140,17 @@ public class GuessTheWordGame{
             System.out.println((System.currentTimeMillis() - startTime));
 
             if((System.currentTimeMillis() - startTime) > waitTime){
-                System.out.println("Client disconnected, try again");
+
+                System.out.println("Client disconnected");
+
+                String msg = new String(packet.getData(),0,packet.getLength());
+                if(msg.equals("hello")){
+                  hasNewClient = true;
+                  clientHost = packet.getAddress();
+                  clientPort = packet.getPort();
+                  packet.setAddress(clientHost);
+                  packet.setPort(clientPort);
+                }
                 return;
             }
 

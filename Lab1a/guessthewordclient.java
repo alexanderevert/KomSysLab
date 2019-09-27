@@ -39,6 +39,7 @@ public class guessthewordclient{
                     System.out.println("Server: " + returnedMessage);
                 } catch (SocketTimeoutException e){
                     returnedMessage = "SERVER TIMED OUT!";
+                    exit =true;
                 }
 
                 if(returnedMessage.equals("ok")){
