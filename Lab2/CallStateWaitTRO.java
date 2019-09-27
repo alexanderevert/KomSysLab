@@ -9,7 +9,7 @@ public class CallStateWaitTRO extends CallStateBusy{
       return new CallStateFree();
     }
 
-    public CallState answerCall(){
+    public CallState answerCall(PrintWriter out){
     //TODO: skicka ack
       return new CallStateInSession();
     }

@@ -4,13 +4,16 @@ import java.io.*;
 
 public abstract class CallState{
 
-  PrintWriter out;
+  
 
-  public CallState receivedInvite(){
+  public boolean busy(){return false;}
+
+  public CallState receivedInvite(PrintWriter out){
+    //error(); return new Free();
     return this;
   }
 
-  public CallState answerCall(){
+  public CallState answerCall(PrintWriter out){
     return this;
   }
 
@@ -22,7 +25,7 @@ public abstract class CallState{
     return this;
   }
 
-  public CallState receivedBye(){
+  public CallState receivedBye(PrintWriter out){
     return this;
   }
 
@@ -30,11 +33,11 @@ public abstract class CallState{
     return this;
   }
   
-  public CallState userWantsToInvite(){
+  public CallState userWantsToInvite(PrintWriter out){
     return this;
   }
 
-  public CallState userWantsToQuit(){
+  public CallState userWantsToQuit(PrintWriter out){
     return this;
   }
 

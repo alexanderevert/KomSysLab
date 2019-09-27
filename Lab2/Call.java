@@ -51,7 +51,7 @@ public class Call{
             System.exit(1);
         }
 
-        IncomingCallListener callListener = new IncomingCallListener(serverSocket, incomingCall, clientSocket);
+        IncomingCallListener callListener = new IncomingCallListener(callHandler, serverSocket, incomingCall, clientSocket);
         peerMessageListener = new PeerMessageListener(serverSocket, clientSocket, isServer, in, callHandler, out);
         messageListenerThread = new Thread(peerMessageListener);
         messageListenerThread.start();
@@ -231,10 +231,12 @@ public class Call{
     public ServerSocket serverSocket;
     public Socket clientSocket;
     public Boolean incomingCall;
-    private IncomingCallListener(ServerSocket serverSocket, Boolean incomingCall, Socket clientSocket){
+    public Callhandler callHandler;
+    private IncomingCallListener(CallHandler callHandler, ServerSocket serverSocket, Boolean incomingCall, Socket clientSocket){
       this.serverSocket = serverSocket;
       this.incomingCall = incomingCall;
       this.clientSocket = clientSocket;
+      this.callHandler = callHandler;
       running = true;
     }
 
@@ -247,11 +249,17 @@ public class Call{
         //    System.out.println("running: " + running);
             if(incomingCall == false){
               clientSocket = serverSocket.accept();
-              System.out.println(INCOMING_CALL_MENU);
-              incomingCall = true;
+              if(!callHandler.isCurrentStateBusy()){
+                System.out.println(INCOMING_CALL_MENU);
+                incomingCall = true;
+              }else{
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                out.println("BUSY");
+                out.close();
+                clientSocket.close();
+              }
+               
             }
-
-
 
           }
       }

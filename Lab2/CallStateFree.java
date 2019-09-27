@@ -8,21 +8,18 @@ public class CallStateFree extends CallState {
 
   }
 
-  public CallState userWantsToInvite(){
-
-  try{
-      out.println("invite");
-  }catch(Exception e){
-      System.out.println("Failed to send invite");
-      e.printStackTrace();
-  }
-    
-
+  public CallState userWantsToInvite(PrintWriter out){
+    try{
+        out.println("invite");
+    }catch(Exception e){
+        System.out.println("Failed to send invite");
+       e.printStackTrace();
+    }
     System.out.println("Going to state CallStateWaitTRO");
     return new CallStateWaitTRO();
   }
 
-  public CallState receivedInvite(){
+  public CallState receivedInvite(PrintWriter out){
     System.out.println("Going to state CallStateWaitAck");
     //TODO: skicka tro
     return new CallStateWaitAck();

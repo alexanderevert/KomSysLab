@@ -27,11 +27,11 @@ public class CallHandler{
   public void processNextEvent(CallEvent event){
     switch(event){
       case INVITE:
-      currentState = currentState.receivedInvite();
+      currentState = currentState.receivedInvite(out);
       break;
 
       case TRO:
-      currentState = currentState.answerCall();
+      currentState = currentState.answerCall(out);
       break;
 
       case ACK:
@@ -43,7 +43,7 @@ public class CallHandler{
       break;
 
       case BYE:
-      currentState = currentState.receivedBye();
+      currentState = currentState.receivedBye(out);
       break;
 
       case OK:
@@ -52,11 +52,11 @@ public class CallHandler{
 
       case USER_WANTS_TO_INVITE:
       //TODO: skicka invite innan man sätts i state
-      currentState = currentState.userWantsToInvite();
+      currentState = currentState.userWantsToInvite(out);
       break;
 
       case USER_WANTS_TO_QUIT:
-      currentState = currentState.userWantsToQuit();
+      currentState = currentState.userWantsToQuit(out);
       break;
 
 
@@ -66,6 +66,10 @@ public class CallHandler{
 
   public void setOutPw(PrintWriter out){
     currentState.out = out;
+  }
+
+  public boolean isCurrentStateBusy(){
+    return currenState.busy();
   }
 
   public void printState() {
