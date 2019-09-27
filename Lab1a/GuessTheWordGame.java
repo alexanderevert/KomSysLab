@@ -142,7 +142,7 @@ public class GuessTheWordGame{
             if((System.currentTimeMillis() - startTime) > waitTime){
 
                 System.out.println("Client disconnected");
-
+                  
                 String msg = new String(packet.getData(),0,packet.getLength());
                 if(msg.equals("hello")){
                   hasNewClient = true;

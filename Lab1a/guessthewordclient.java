@@ -38,8 +38,8 @@ public class guessthewordclient{
                     returnedMessage = receiveMessage(dSocket, packet);
                     System.out.println("Server: " + returnedMessage);
                 } catch (SocketTimeoutException e){
-                    returnedMessage = "SERVER TIMED OUT!";
-                    exit =true;
+                    System.out.println("Server timed out. Exiting...");
+                    exit = true;
                 }
 
                 if(returnedMessage.equals("ok")){
@@ -75,11 +75,8 @@ public class guessthewordclient{
             }
 
         }
-        catch (SocketException e){
-            e.printStackTrace();
-
-        } catch (IOException e){
-            e.printStackTrace();
+       catch (IOException e){
+          System.out.println("Server timed out. Exiting...");
         } finally {
             if (dSocket != null) dSocket.close();
             if (scanner != null) scanner.close();
@@ -115,6 +112,7 @@ public class guessthewordclient{
                     return;
                 }
             } catch (SocketTimeoutException e){
+
             }
 
         }
