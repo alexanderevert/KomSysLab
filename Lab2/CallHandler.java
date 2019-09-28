@@ -16,12 +16,12 @@ public class CallHandler{
   }
 
   private CallState currentState;
-  //private PrintWriter out;
+  private PrintWriter out;
   
   public CallHandler(PrintWriter out){
     currentState = new CallStateFree();
     //this.out = out;
-    currentState.out = out;
+    this.out = out;
   }
 
   public void processNextEvent(CallEvent event){
@@ -65,11 +65,11 @@ public class CallHandler{
   }
 
   public void setOutPw(PrintWriter out){
-    currentState.out = out;
+    this.out = out;
   }
 
   public boolean isCurrentStateBusy(){
-    return currenState.busy();
+    return currentState.busy();
   }
 
   public void printState() {

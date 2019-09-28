@@ -7,8 +7,10 @@ public class Call{
   private static String INCOMING_CALL_MENU = "\n INCOMING CALL(INVITE)...\n Answer / Reject?";
   private static String CALL_IP_QUESTION = "Which IP would you like to connect to?";
   private static String CALL_PORT_QUESTION = "Which port would you like to connect to?";
-  private static String START_MENU = "*************************\n 1. Make call(call)\n 2. Answer call(answer)\n 3. Reject call(reject)\n 4 .Hang up(hangup)\n 5 .Quit(quit)\n*************************";
+ // private static String START_MENU = "*************************\n 1. Make call(call)\n 2. Answer call(answer)\n 3. Reject call(reject)\n 4 .Hang up(hangup)\n 5 .Quit(quit)\n*************************";
+  private static String START_MENU = "*************************\n 1. Make call(call)\n 2.Quit(quit)\n*************************";
 
+  private static String UNKOWN_COMMAND = "Unknown command.";
   private static String INVITE_MESSAGE = "INVITE";
   private static String TRO_MESSAGE = "TRO";
   private static String ACK_MESSAGE = "ACK";
@@ -39,6 +41,9 @@ public class Call{
     Thread callListenerThread = null;
     Thread messageListenerThread = null;
 
+    TroAckListener troAckListener = null;
+    Thread troAckThread = null;
+    
     PeerMessageListener peerMessageListener = null;
 
     try{
@@ -57,7 +62,6 @@ public class Call{
         messageListenerThread.start();
         callListenerThread = new Thread(callListener);
         callListenerThread.start();
-
         while(!doQuit){
           System.out.println(START_MENU);
 
@@ -68,20 +72,73 @@ public class Call{
             inSignal.toLowerCase();
               switch(inSignal){
                 case "call":
-                    
-                    clientSocket = new Socket(callArr[1], Integer.parseInt(callArr[2]));
+                    try{
+                      clientSocket = new Socket(callArr[1], Integer.parseInt(callArr[2]));
+                    }catch(UnknownHostException e){
+                      System.err.println("ServerHostName error: " + callArr[1]);
+                    }
+                    catch(ArrayIndexOutOfBoundsException e){
+                      System.out.println("\nCorrect syntax: call <ip address> <port>\n");
+                      System.out.println(START_MENU);
+                      break;
+                    }
                     out = new PrintWriter(clientSocket.getOutputStream(), true);
-                    callHandler.setOutPw(out);
-                    callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_INVITE);
+                    in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                     isServer = false;
-                    peerMessageListener.setIsServer(isServer);
+                    callHandler.setOutPw(out);
 
+                    peerMessageListener.setIn(in);
+                    peerMessageListener.setIsServer(isServer);
+                    
+                    peerMessageListener.setAwaitingTroAck(true);
+                    System.out.println("awaitingtroack: " + peerMessageListener.getAwaitTroAck());
+                    callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_INVITE);
+
+               //     troAckListener = new TroAckListener(in, callHandler, false);
+                 //   troAckThread = new Thread(troAckListener);
+               //     troAckThread.start();
+                    System.out.println("troackthread started");
+
+                    
                 break;
                 case "answer":
+
+                  if(!callListener.getIncomingCall()){
+                    System.out.println("No incoming call");
+                    break;
+                  }
+           //       clientSocket = callListener.getClient();
+             //     out = new PrintWriter(clientSocket.getOutputStream(), true);
+               //  in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+                 // callHandler.setOutPw(out);
+
+                 // callHandler.processNextEvent(CallHandler.CallEvent.INVITE);
+                  
+                 // troAckListener = new TroAckListener(in, callHandler, true);
+                //  troAckThread = new Thread(troAckListener);
+                //  troAckThread.start();
+               //   System.out.println("troackthread started");
+                  
                     // if incommingCall==true?
-                    callHandler.processNextEvent(CallHandler.CallEvent.TRO);
+                
                     isServer = true;
+                    clientSocket = callListener.getClient();
+
                     peerMessageListener.setIsServer(isServer);
+                    peerMessageListener.setIn(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())));
+                    out = new PrintWriter(clientSocket.getOutputStream(), true);
+                    in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                    peerMessageListener.setIn(in);
+                    callHandler.setOutPw(out);
+                    peerMessageListener.setAwaitingTroAck(true);
+                    System.out.println("awaitingtroack: " + peerMessageListener.getAwaitTroAck());
+
+                    //TODO: bekräfta att detta är rätt - var TRO innan
+                    callHandler.processNextEvent(CallHandler.CallEvent.INVITE);
+                    
+
+                    
                 break;
                 case "hangup":
                     callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_QUIT);
@@ -91,7 +148,9 @@ public class Call{
                 break;
                 case "reject":
                 break;
-                default: break;
+                default:
+                System.out.println(UNKOWN_COMMAND + "\n" );
+                break;
 
             }
 
@@ -144,7 +203,7 @@ public class Call{
   }
 
 
-  public static boolean initiateCall(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, PrintWriter out, IncomingCallListener callListener) throws IOException{
+/*  public static boolean initiateCall(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, PrintWriter out, IncomingCallListener callListener) throws IOException{
 
       clientSocket = callListener.getClient();
       out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -225,13 +284,15 @@ public class Call{
       break;
     }
   }
+  */
+
 
   private static class IncomingCallListener implements Runnable{
     public boolean running;
     public ServerSocket serverSocket;
     public Socket clientSocket;
     public Boolean incomingCall;
-    public Callhandler callHandler;
+    public CallHandler callHandler;
     private IncomingCallListener(CallHandler callHandler, ServerSocket serverSocket, Boolean incomingCall, Socket clientSocket){
       this.serverSocket = serverSocket;
       this.incomingCall = incomingCall;
@@ -240,24 +301,33 @@ public class Call{
       running = true;
     }
 
+
+    
     @Override
     public void run(){
         try{
-
+          
           while(running){
             //TODO: confirm att det är ett meddelande?
         //    System.out.println("running: " + running);
+
+        
             if(incomingCall == false){
               clientSocket = serverSocket.accept();
-              if(!callHandler.isCurrentStateBusy()){
-                System.out.println(INCOMING_CALL_MENU);
-                incomingCall = true;
-              }else{
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                out.println("BUSY");
-                out.close();
-                clientSocket.close();
-              }
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                String msg = in.readLine();
+                System.out.println(msg);
+                if(msg.equals("invite")){
+                  incomingCall = true;
+                  System.out.println(INCOMING_CALL_MENU);
+         //         in.close();
+                }else{
+                  System.out.println("hallå");
+
+                  incomingCall = false;
+                  clientSocket.close();
+                }
+              
                
             }
 
@@ -291,7 +361,47 @@ public class Call{
     }
   }
 
+/*
+  private static class TroAckListener implements Runnable{
+    private boolean ack;
+    private BufferedReader in;  
+    private CallHandler callHandler;
+    //true för ack, false för tro
+    private TroAckListener(BufferedReader in, CallHandler callHandler, boolean ack){
+      this.in = in;
+      this.ack = ack;
+      this.callHandler = callHandler;         
+    }
 
+    
+    @Override
+    public void run(){
+      String message = null;
+      try{
+        if(in!=null){
+          message = in.readLine();
+          in.close();
+          if(ack){
+            System.out.println(message);
+  
+            if(message.equals("ack")){
+              callHandler.processNextEvent(CallHandler.CallEvent.ACK);
+            }        
+          }else{
+  
+            if(message.equals("tro")){
+              callHandler.processNextEvent(CallHandler.CallEvent.TRO);
+            }
+          }
+        }
+        
+      }catch(IOException e){
+        e.printStackTrace();
+      }
+      
+
+    }
+  }*/
   private static class PeerMessageListener implements Runnable{
       private ServerSocket serverSocket;
       private Socket clientSocket;
@@ -301,6 +411,7 @@ public class Call{
       private boolean awaitingTroAck;
       private CallHandler callHandler;
       private PrintWriter out;
+      private boolean running;
       private PeerMessageListener(ServerSocket serverSocket, Socket clientSocket, boolean isServer, BufferedReader in, CallHandler callHandler, PrintWriter out){
             this.serverSocket = serverSocket;
             this.clientSocket = clientSocket;
@@ -309,41 +420,78 @@ public class Call{
             inCall = false;
             this.callHandler = callHandler;
             this.out = out;
+            awaitingTroAck = false;
+            running = true;
       }
 
       @Override
       public void run(){
-            while(true){
-
-                  if(inCall){
-                    try{
-                      serverSocket.setSoTimeout(300);
-                    try{
-                      String message = in.readLine();
-                      if(message.equals("bye")){
-                        callHandler.processNextEvent(CallHandler.CallEvent.BYE);
-                      }
-                      }catch(SocketTimeoutException e){
-
-                      }
-                    }catch(IOException e){
+            while(running){
+              
+              if(awaitingTroAck){
+                //TODO: varför kan man inte set:a denna variabel utifrån??
+                System.out.println("eller här");
+                try{
+                  String message = in.readLine();
+                  message.trim().toLowerCase();
+                  if(message.equals("ack")){
+                    if(isServer){
+                      inCall = true;
+                      callHandler.processNextEvent(CallHandler.CallEvent.ACK);
+                    }else{
 
                     }
-                  }else if(awaitingTroAck){
+                  }
+                  else if(message.equals("tro")){
+                    callHandler.processNextEvent(CallHandler.CallEvent.TRO);
+                  }
+                }catch(IOException e){
+                  e.printStackTrace();
 
+                }
+                }else if(inCall){
+                  System.out.println("här");
+                  try{
+                    serverSocket.setSoTimeout(300);
+                  try{
+                    String message = in.readLine();
+                    if(message.equals("bye")){
+                      callHandler.processNextEvent(CallHandler.CallEvent.BYE);
+                    }
+                    }catch(SocketTimeoutException e){
+
+                    }
+                  }catch(IOException e){
 
                   }
+                    
+                }
+
+
 
 
 
             }
 
         }
+      public void setAwaitingTroAck(boolean awaitingTroAck){
+        this.awaitingTroAck = awaitingTroAck;
+      }
+      public boolean getAwaitTroAck(){
+        return awaitingTroAck;
+      }
       public void setIsServer(boolean isServer){
         this.isServer = isServer;
       }
       public void setInCall(boolean inCall){
         this.inCall = inCall;
+      }
+
+      public void setIn(BufferedReader in){
+        this.in = in;
+      }
+      public void setOut(PrintWriter out){
+        this.out = out;
       }
       }
 }

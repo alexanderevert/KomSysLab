@@ -1,3 +1,7 @@
+import java.util.*;
+import java.net.*;
+import java.io.*;
+
 
 public class CallStateWaitTRO extends CallStateBusy{
     public CallStateWaitTRO(){
@@ -9,8 +13,17 @@ public class CallStateWaitTRO extends CallStateBusy{
       return new CallStateFree();
     }
 
+    
     public CallState answerCall(PrintWriter out){
-    //TODO: skicka ack
+      System.out.println("Sending ACK");
+      //TODO: skicka ack
+      try{
+        out.println("ack");
+      }catch(Exception e){
+        e.printStackTrace();
+      }
+      
+      System.out.println("Going to state: CallStateInSession");
       return new CallStateInSession();
     }
 

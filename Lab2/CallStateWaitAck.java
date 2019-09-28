@@ -5,6 +5,7 @@ public class CallStateWaitAck extends CallStateBusy{
   }
 
   public CallState receivedAck(){
+    System.out.println("To hang up: <hangup>");
     System.out.println("Going to state CallStateInSession");
     return new CallStateInSession();
   }

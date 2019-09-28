@@ -27,9 +27,9 @@ public class ChatRoomClient{
       		String userInput = null;
 			String lineIn = null;
 			boolean disconnect = false;
-      MessageListener listener = new MessageListener(in);
-      Thread thread = new Thread(listener);
-      thread.start();
+			MessageListener listener = new MessageListener(in);
+			Thread thread = new Thread(listener);
+			thread.start();
 
 		 	while(!disconnect){
 				if(stdIn.ready()){
