@@ -8,7 +8,7 @@ public class Call{
   private static String CALL_IP_QUESTION = "Which IP would you like to connect to?";
   private static String CALL_PORT_QUESTION = "Which port would you like to connect to?";
  // private static String START_MENU = "*************************\n 1. Make call(call)\n 2. Answer call(answer)\n 3. Reject call(reject)\n 4 .Hang up(hangup)\n 5 .Quit(quit)\n*************************";
-  private static String START_MENU = "*************************\n 1. Make call(call)\n 2.Quit(quit)\n*************************";
+  private static String START_MENU = "*************************\n 1. Make call(call)\n 2. Quit(quit)\n*************************";
 
   private static String UNKOWN_COMMAND = "Unknown command.";
   private static String INVITE_MESSAGE = "INVITE";
@@ -41,7 +41,7 @@ public class Call{
     Thread callListenerThread = null;
     Thread messageListenerThread = null;
 
-    TroAckListener troAckListener = null;
+    //TroAckListener troAckListener = null;
     Thread troAckThread = null;
     
     PeerMessageListener peerMessageListener = null;
@@ -427,12 +427,59 @@ public class Call{
       @Override
       public void run(){
             while(running){
-              
+
+              try{
+							  Thread.sleep(100);
+						  } catch(InterruptedException e){
+							  e.printStackTrace();
+              }
+              // TEST SWITCH
               if(awaitingTroAck){
+                String message = null;
+                try{
+                  serverSocket.setSoTimeout(5000);
+                  try{
+                    message = in.readLine();
+                  } catch(SocketTimeoutException e){
+                    System.out.println("Handshake Timeout..");
+                    // sätta insignal timeout?
+                  }
+                    System.out.println("Received: " + message);
+                    message.trim().toLowerCase();
+
+                    switch(message){
+                      case "tro":
+                        callHandler.processNextEvent(CallHandler.CallEvent.TRO);
+                        break;
+                      case "ack":
+                        callHandler.processNextEvent(CallHandler.CallEvent.ACK);
+                        break;
+                      case "bye":
+                        callHandler.processNextEvent(CallHandler.CallEvent.BYE);
+                        break;
+                      case "ok":
+                        callHandler.processNextEvent(CallHandler.CallEvent.OK);
+                        break;
+                      default:
+                        System.out.println("Handshake ERROR" + "\n" );
+                        break;
+                      
+                    }
+                  
+
+                }catch(IOException e){
+                  e.printStackTrace();
+
+                }
+              } 
+              
+              
+              /*if(awaitingTroAck){
                 //TODO: varför kan man inte set:a denna variabel utifrån??
-                System.out.println("eller här");
+                
                 try{
                   String message = in.readLine();
+                  System.out.println("Received: " + message);
                   message.trim().toLowerCase();
                   if(message.equals("ack")){
                     if(isServer){
@@ -442,38 +489,40 @@ public class Call{
 
                     }
                   }
+                  // inCall och awaitingTroAck är ju ett sätt att kolla states? får man göra så?
+                  // Eftersom den vet vilken state den är i så skickas bara det direkt in?
                   else if(message.equals("tro")){
                     callHandler.processNextEvent(CallHandler.CallEvent.TRO);
+                  }else{
+
                   }
                 }catch(IOException e){
                   e.printStackTrace();
 
                 }
                 }else if(inCall){
-                  System.out.println("här");
                   try{
                     serverSocket.setSoTimeout(300);
-                  try{
-                    String message = in.readLine();
-                    if(message.equals("bye")){
-                      callHandler.processNextEvent(CallHandler.CallEvent.BYE);
-                    }
-                    }catch(SocketTimeoutException e){
-
-                    }
+                    try{
+                      String message = in.readLine();
+                      if(message.equals("bye")){
+                        callHandler.processNextEvent(CallHandler.CallEvent.BYE);
+                      }else if(message.equals("ok")){
+                        callHandler.processNextEvent(CallHandler.CallEvent.OK);
+                      }
+                      }catch(SocketTimeoutException e){
+                        // sätta insignal timeout?
+                      }
                   }catch(IOException e){
 
                   }
                     
-                }
-
-
-
+                }*/
 
 
             }
 
-        }
+      }
       public void setAwaitingTroAck(boolean awaitingTroAck){
         this.awaitingTroAck = awaitingTroAck;
       }

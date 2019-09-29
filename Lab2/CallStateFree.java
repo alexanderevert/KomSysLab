@@ -12,7 +12,7 @@ public class CallStateFree extends CallState {
     try{
         out.println("invite");
     }catch(Exception e){
-        System.out.println("Failed to send invite");
+        System.out.println("Failed to send INVITE");
         e.printStackTrace();
       return new CallStateFree();
     }
@@ -21,11 +21,13 @@ public class CallStateFree extends CallState {
   }
 
   public CallState receivedInvite(PrintWriter out){
-    //TODO: bekräfta 
-    
-    System.out.println("Sending tro");
-    out.println("tro");
-
+    try{
+      out.println("tro");
+    }catch(Exception e){
+      System.out.println("Failed to send TRO");
+      e.printStackTrace();
+    return new CallStateFree();
+    }
     System.out.println("Going to state CallStateWaitAck");
     return new CallStateWaitAck();
   }

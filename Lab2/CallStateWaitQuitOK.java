@@ -14,6 +14,6 @@ public class CallStateWaitQuitOK extends CallStateBusy{
   }
 
   public void printState(){
-	  System.out.println("State: Wainting quit OK");
+	  System.out.println("State: Waiting quit OK");
   }
 }
