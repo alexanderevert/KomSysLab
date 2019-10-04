@@ -17,6 +17,9 @@ public class CallHandler{
 
   private CallState currentState;
   private PrintWriter out;
+  private AudioStreamUDP audioStream;
+  private int udpPort;
+  private InetAddress ip;
   
   public CallHandler(PrintWriter out){
     currentState = new CallStateFree();
@@ -27,15 +30,16 @@ public class CallHandler{
   public void processNextEvent(CallEvent event){
     switch(event){
       case INVITE:
-      currentState = currentState.receivedInvite(out);
+      currentState = currentState.receivedInvite(audioStream, out);
       break;
 
       case TRO:
-      currentState = currentState.answerCall(out);
+      currentState = currentState.answerCall(ip, udpPort, audioStream, out);
       break;
 
       case ACK:
-      currentState = currentState.receivedAck();
+      
+      currentState = currentState.receivedAck(ip, udpPort, audioStream);
       break;
 
       case TIMEOUT:
@@ -43,11 +47,11 @@ public class CallHandler{
       break;
 
       case BYE:
-      currentState = currentState.receivedBye(out);
+      currentState = currentState.receivedBye(audioStream, out);
       break;
 
       case OK:
-      currentState = currentState.receivedOk();
+      currentState = currentState.receivedOk(audioStream);
       break;
 
       case USER_WANTS_TO_INVITE:
@@ -56,7 +60,7 @@ public class CallHandler{
       break;
 
       case USER_WANTS_TO_QUIT:
-      currentState = currentState.userWantsToQuit(out);
+      currentState = currentState.userWantsToQuit(audioStream, out);
       break;
 
 
@@ -64,6 +68,18 @@ public class CallHandler{
     }
   }
 
+  public void setIp(InetAddress ip){
+    this.ip = ip;
+  }
+
+  public void setUdpPort(int port){
+    this.udpPort = port;
+  }
+
+  public void setAudioStream(AudioStreamUDP audioStream){
+    this.audioStream = audioStream;
+  }
+  
   public void setOutPw(PrintWriter out){
     this.out = out;
   }

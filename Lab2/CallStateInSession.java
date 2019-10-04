@@ -7,7 +7,7 @@ public class CallStateInSession extends CallState{
 
   }
 
-  public CallState receivedBye(PrintWriter out){
+  public CallState receivedBye(AudioStreamUDP audioStream,PrintWriter out){
     
     try{
       out.println("ok");
@@ -17,10 +17,11 @@ public class CallStateInSession extends CallState{
     return new CallStateInSession();
     }
     System.out.println("Going to state CallStateFree");
+    audioStream.stopStreaming();
     return new CallStateFree();
   }
 
-  public CallState userWantsToQuit(PrintWriter out){
+  public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out){
     try{
       out.println("bye");
     }catch(Exception e){
@@ -29,6 +30,7 @@ public class CallStateInSession extends CallState{
     return new CallStateInSession();
     }
     System.out.println("Going to state CallStateWaitQuitOK");
+    //audioStream.stopStreaming(); 
     return new CallStateWaitQuitOK();
   }
 

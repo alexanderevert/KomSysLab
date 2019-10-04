@@ -8,29 +8,7 @@ public abstract class CallState{
 
   public boolean busy(){return false;}
 
-  public CallState receivedInvite(PrintWriter out){
-    //error(); return new Free();
-    return this;
-  }
-
-  public CallState answerCall(PrintWriter out){
-
-    return this;
-  }
-
-  public CallState receivedAck(){
-    return this;
-  }
-
   public CallState timedOut(){
-    return this;
-  }
-
-  public CallState receivedBye(PrintWriter out){
-    return this;
-  }
-
-  public CallState receivedOk(){
     return this;
   }
   
@@ -38,13 +16,32 @@ public abstract class CallState{
     return this;
   }
 
-  public CallState userWantsToQuit(PrintWriter out){
-    return this;
+  public void printState(){
   }
 
-  public void printState(){
-    ;
-  }
+public CallState receivedInvite(AudioStreamUDP audioStream, PrintWriter out) {
+	return null;
+}
+
+public CallState answerCall(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out) {
+	return null;
+}
+
+public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out) {
+	return null;
+}
+
+public CallState receivedBye(AudioStreamUDP audioStream, PrintWriter out) {
+	return null;
+}
+
+public CallState receivedOk(AudioStreamUDP audioStream) {
+	return null;
+}
+
+public CallState receivedAck(InetAddress ip, int udpPort, AudioStreamUDP audioStream) {
+	return null;
+}
 
   
 

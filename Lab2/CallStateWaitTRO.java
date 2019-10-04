@@ -13,16 +13,20 @@ public class CallStateWaitTRO extends CallStateBusy{
       return new CallStateFree();
     }
 
-    
-    public CallState answerCall(PrintWriter out){
+    public CallState answerCall(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out){
       System.out.println("Sending ACK");
-      //TODO: skicka ack
       try{
-        out.println("ack");
+        out.println("ack,"+ audioStream.getLocalPort());
       }catch(Exception e){
         e.printStackTrace();
       }
-      
+      try{
+        audioStream.connectTo(ip, udpPort);
+        audioStream.startStreaming();
+      }catch(IOException ioe){
+        System.out.println("UDP connection error");
+        return new CallStateFree();
+      }
       System.out.println("Going to state: CallStateInSession");
       return new CallStateInSession();
     }

@@ -20,9 +20,10 @@ public class CallStateFree extends CallState {
     return new CallStateWaitTRO();
   }
 
-  public CallState receivedInvite(PrintWriter out){
+  public CallState receivedInvite(AudioStreamUDP audioStream, PrintWriter out){
+    
     try{
-      out.println("tro");
+      out.println("tro," + audioStream.getLocalPort());
     }catch(Exception e){
       System.out.println("Failed to send TRO");
       e.printStackTrace();

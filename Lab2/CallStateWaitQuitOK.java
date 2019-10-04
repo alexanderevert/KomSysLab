@@ -8,7 +8,8 @@ public class CallStateWaitQuitOK extends CallStateBusy{
     System.out.println("Going to state CallStateFree");
     return new CallStateFree();
   }
-  public CallState receivedOk(){
+  public CallState receivedOk(AudioStreamUDP audioStream){
+    audioStream.stopStreaming();
     System.out.println("Going to state CallStateFree");
     return new CallStateFree();
   }
