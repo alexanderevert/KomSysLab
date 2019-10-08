@@ -8,12 +8,13 @@ public class CallStateFree extends CallState {
 
   }
 
-  public CallState userWantsToInvite(PrintWriter out, boolean faulty, Scanner scanner){
+  public CallState userWantsToInvite(PrintWriter out, boolean faulty, Scanner scanner, String faultyInvite){
     String msg = null;
     if(faulty){
-      scanner = new Scanner(System.in);
-      System.out.println("Type invite message:");
-      msg = scanner.nextLine();
+      //scanner = new Scanner(System.in);
+      //System.out.println("Type invite message:");
+      //msg = scanner.nextLine();
+      msg = faultyInvite;
       
     }else{
       msg = "invite";
@@ -30,13 +31,13 @@ public class CallStateFree extends CallState {
     return new CallStateWaitTRO();
   }
 
-  public CallState receivedInvite(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner){
+  public CallState receivedInvite(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyTro){
     String msg = null;
     if(faulty){
-      scanner = new Scanner(System.in);
-      System.out.println("Type tro message:");
-      msg = scanner.nextLine();
-
+      //scanner = new Scanner(System.in);
+      //System.out.println("Type tro message:");
+      //msg = scanner.nextLine();
+      msg = faultyTro;
     }else{
       msg = "tro";
     }

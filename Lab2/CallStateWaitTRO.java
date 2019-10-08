@@ -13,17 +13,20 @@ public class CallStateWaitTRO extends CallStateBusy{
       return new CallStateFree();
     }
 
-    public CallState answerCall(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner){
-
+    public CallState answerCall(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyAck){
+  
+      
       String msg = null;
       if(faulty){
-        scanner = new Scanner(System.in);
-        System.out.println("Type ack message:");
-        msg = scanner.nextLine();
+        
+        //System.out.println("Type ack message:");
+        //msg = scanner.nextLine();
+        msg = faultyAck;
         System.out.println("You typed: " + msg);
       }else{
         msg = "ack";
       }
+
       System.out.println("Sending ACK");
       try{
         out.println(msg + ","+ audioStream.getLocalPort());
