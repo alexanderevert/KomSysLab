@@ -2,7 +2,7 @@ import java.util.*;
 import java.net.*;
 import java.io.*;
 
-public class CallStateInSession extends CallState{
+public class CallStateInSession extends CallStateBusy{
   public CallStateInSession(){
 
   }
