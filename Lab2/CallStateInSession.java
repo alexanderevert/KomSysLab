@@ -7,12 +7,10 @@ public class CallStateInSession extends CallStateBusy{
 
   }
 
-  public CallState receivedBye(AudioStreamUDP audioStream,PrintWriter out, boolean faulty, Scanner scanner){
+  public CallState receivedBye(AudioStreamUDP audioStream,PrintWriter out, boolean faulty, Scanner scanner, String faultyOk){
     String msg = null;
     if(faulty){
-      scanner = new Scanner(System.in);
-      System.out.println("Type ok message:");
-      msg = scanner.nextLine();
+      msg = faultyOk;
 
     }else{
       msg = "ok";
@@ -29,12 +27,10 @@ public class CallStateInSession extends CallStateBusy{
     return new CallStateFree();
   }
 
-  public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner){
+  public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyBye){
     String msg = null;
     if(faulty){
-      scanner = new Scanner(System.in);
-      System.out.println("Type bye message:");
-      msg = scanner.nextLine();
+      msg = faultyBye;
 
     }else{
       msg = "bye";

@@ -27,7 +27,7 @@ public class Caller {
 			stream = new AudioStreamUDP();
 			int localPort = stream.getLocalPort();
 			System.out.println("Bound to local port = " + localPort);
-			
+
 			// Set the address and port for the callee.
 			System.out.println("What's the remote port number?");
 			reply = scan.nextLine().trim();

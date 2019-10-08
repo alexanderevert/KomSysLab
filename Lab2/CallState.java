@@ -33,11 +33,11 @@ public CallState answerCall(InetAddress ip, int udpPort, AudioStreamUDP audioStr
 }
 
 
-public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner) {
+public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyBye) {
   error();
   return new CallStateFree();
 }
-public CallState receivedBye(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner) {
+public CallState receivedBye(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyBye) {
   error();
   return new CallStateFree();
 }

@@ -56,7 +56,7 @@ public class CallHandler{
       break;
 
       case BYE:
-      currentState = currentState.receivedBye(audioStream, out, faulty, scanner);
+      currentState = currentState.receivedBye(audioStream, out, faulty, scanner, faultyOk);
       break;
 
       case OK:
@@ -68,7 +68,7 @@ public class CallHandler{
       break;
 
       case USER_WANTS_TO_QUIT:
-      currentState = currentState.userWantsToQuit(audioStream, out, faulty, scanner);
+      currentState = currentState.userWantsToQuit(audioStream, out, faulty, scanner, faultyBye);
       break;
       case BUSY:
         currentState = currentState.receivedBusy();

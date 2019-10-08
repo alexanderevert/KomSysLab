@@ -14,11 +14,11 @@ public class CallStateWaitTRO extends CallStateBusy{
     }
 
     public CallState answerCall(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyAck){
-  
-      
+
+
       String msg = null;
       if(faulty){
-        
+
         //System.out.println("Type ack message:");
         //msg = scanner.nextLine();
         msg = faultyAck;
