@@ -13,10 +13,20 @@ public class CallStateWaitTRO extends CallStateBusy{
       return new CallStateFree();
     }
 
-    public CallState answerCall(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out){
+    public CallState answerCall(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner){
+
+      String msg = null;
+      if(faulty){
+        scanner = new Scanner(System.in);
+        System.out.println("Type ack message:");
+        msg = scanner.nextLine();
+        System.out.println("You typed: " + msg);
+      }else{
+        msg = "ack";
+      }
       System.out.println("Sending ACK");
       try{
-        out.println("ack,"+ audioStream.getLocalPort());
+        out.println(msg + ","+ audioStream.getLocalPort());
       }catch(Exception e){
         e.printStackTrace();
       }
@@ -33,6 +43,12 @@ public class CallStateWaitTRO extends CallStateBusy{
 
     public void printState(){
       System.out.println("State: Waiting TRO");
+    }
+
+    public CallState receivedBusy(){
+      System.out.println("The person you are trying to call is busy");
+      System.out.println("Going to CallStateFree");
+      return new CallStateFree();
     }
 
 }

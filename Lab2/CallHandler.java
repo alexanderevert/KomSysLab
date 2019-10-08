@@ -13,6 +13,9 @@ public class CallHandler{
     OK,
     USER_WANTS_TO_INVITE,
     USER_WANTS_TO_QUIT,
+    BUSY,
+
+
   }
 
   private CallState currentState;
@@ -20,7 +23,8 @@ public class CallHandler{
   private AudioStreamUDP audioStream;
   private int udpPort;
   private InetAddress ip;
-  
+  private boolean faulty;
+  private Scanner scanner;
   public CallHandler(PrintWriter out){
     currentState = new CallStateFree();
     //this.out = out;
@@ -30,15 +34,15 @@ public class CallHandler{
   public void processNextEvent(CallEvent event){
     switch(event){
       case INVITE:
-      currentState = currentState.receivedInvite(audioStream, out);
+      currentState = currentState.receivedInvite(audioStream, out, faulty, scanner);
       break;
 
       case TRO:
-      currentState = currentState.answerCall(ip, udpPort, audioStream, out);
+      currentState = currentState.answerCall(ip, udpPort, audioStream, out, faulty, scanner);
       break;
 
       case ACK:
-      
+
       currentState = currentState.receivedAck(ip, udpPort, audioStream);
       break;
 
@@ -47,7 +51,7 @@ public class CallHandler{
       break;
 
       case BYE:
-      currentState = currentState.receivedBye(audioStream, out);
+      currentState = currentState.receivedBye(audioStream, out, faulty, scanner);
       break;
 
       case OK:
@@ -55,17 +59,22 @@ public class CallHandler{
       break;
 
       case USER_WANTS_TO_INVITE:
-      //TODO: skicka invite innan man sätts i state
-      currentState = currentState.userWantsToInvite(out);
+      currentState = currentState.userWantsToInvite(out, faulty, scanner);
       break;
 
       case USER_WANTS_TO_QUIT:
-      currentState = currentState.userWantsToQuit(audioStream, out);
+      currentState = currentState.userWantsToQuit(audioStream, out, faulty, scanner);
       break;
-
+      case BUSY:
+        currentState = currentState.receivedBusy();
+      break;
 
       default: break;
     }
+  }
+
+  public void setScanner(Scanner scanner){
+    this.scanner = scanner;
   }
 
   public void setIp(InetAddress ip){
@@ -79,7 +88,7 @@ public class CallHandler{
   public void setAudioStream(AudioStreamUDP audioStream){
     this.audioStream = audioStream;
   }
-  
+
   public void setOutPw(PrintWriter out){
     this.out = out;
   }
@@ -91,6 +100,11 @@ public class CallHandler{
   public void printState() {
     currentState.printState();
   }
+
+  public void setFaulty(boolean faulty){
+    this.faulty = faulty;
+  }
+
 
 
 }

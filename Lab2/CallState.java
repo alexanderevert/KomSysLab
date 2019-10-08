@@ -5,7 +5,6 @@ import java.io.*;
 public abstract class CallState{
 
 
-
 public boolean busy(){
   return false;
 }
@@ -15,7 +14,7 @@ public CallState timedOut(){
   return new CallStateFree();
 }
 
-public CallState userWantsToInvite(PrintWriter out){
+public CallState userWantsToInvite(PrintWriter out, boolean faulty, Scanner scanner){
   error();
   return new CallStateFree();
 }
@@ -23,22 +22,22 @@ public CallState userWantsToInvite(PrintWriter out){
 public void printState(){
 }
 
-public CallState receivedInvite(AudioStreamUDP audioStream, PrintWriter out){
+public CallState receivedInvite(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner){
   error();
   return new CallStateFree();
 }
 
-public CallState answerCall(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out) {
+public CallState answerCall(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner) {
   error();
   return new CallStateFree();
 }
 
 
-public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out) {
+public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner) {
   error();
   return new CallStateFree();
 }
-public CallState receivedBye(AudioStreamUDP audioStream, PrintWriter out) {
+public CallState receivedBye(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner) {
   error();
   return new CallStateFree();
 }
@@ -53,8 +52,13 @@ public CallState receivedAck(InetAddress ip, int udpPort, AudioStreamUDP audioSt
   return new CallStateFree();
 }
 
+public CallState receivedBusy(){
+  error();
+  return new CallStateFree();
+}
+
 private void error(){
-  System.out.println("Error");
+  System.out.println("Going to state CallStateFree");
 }
 
 
