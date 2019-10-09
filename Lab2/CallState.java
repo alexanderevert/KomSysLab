@@ -14,7 +14,7 @@ public CallState timedOut(){
   return new CallStateFree();
 }
 
-public CallState userWantsToInvite(PrintWriter out, boolean faulty, Scanner scanner, String faultyInvite){
+public CallState userWantsToInvite(PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg){
   error();
   return new CallStateFree();
 }
@@ -22,22 +22,22 @@ public CallState userWantsToInvite(PrintWriter out, boolean faulty, Scanner scan
 public void printState(){
 }
 
-public CallState receivedInvite(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyTro){
+public CallState receivedInvite(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg){
   error();
   return new CallStateFree();
 }
 
-public CallState answerCall(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyAck) {
+public CallState receivedTro(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg) {
   error();
   return new CallStateFree();
 }
 
 
-public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner) {
+public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg) {
   error();
   return new CallStateFree();
 }
-public CallState receivedBye(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner) {
+public CallState receivedBye(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg) {
   error();
   return new CallStateFree();
 }

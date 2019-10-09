@@ -1,4 +1,5 @@
 import java.util.*;
+
 import java.net.*;
 import java.io.*;
 public class Call{
@@ -52,7 +53,7 @@ public class Call{
 
       AudioStreamUDP audioStream = null;
       IncomingCallListener callListener = new IncomingCallListener(audioStream, callHandler, serverSocket, incomingCall,
-          clientSocket);
+          clientSocket, faulty);
       callListenerThread = new Thread(callListener);
       callListenerThread.start();
       while (!doQuit) {
@@ -69,18 +70,26 @@ public class Call{
           case "call":
             try {
               clientSocket = new Socket(callArr[1], Integer.parseInt(callArr[2]));
-            } catch (UnknownHostException e) {
-              System.err.println("ServerHostName error: " + callArr[1]);
-            } catch (ArrayIndexOutOfBoundsException e) {
-              System.out.println("\nCorrect syntax: call <ip address> <port>\n");
-              System.out.println(START_MENU);
+            }catch(ConnectException e){
+              System.out.println("Do not recognize host name and/or port.");
               break;
             }
+            catch (UnknownHostException e) {
+              System.out.println("Do not recognize host name and/or port.");
+              break;
+            } catch (ArrayIndexOutOfBoundsException e) {
+              System.out.println("\nCorrect syntax: call <ip address> <port>\n");
+              break;
+            }catch(Exception e){
+              System.out.println("Do not recognize host name and/or port.");
+              break;
+            }
+
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             PeerMessageListener peerMessageListener = new PeerMessageListener(audioStream, serverSocket, clientSocket,
-                in, callHandler, out);
+                in, callHandler, out, faulty);
             Thread messageListenerThread = new Thread(peerMessageListener);
 
             callHandler.setOutPw(out);
@@ -92,7 +101,7 @@ public class Call{
             callHandler.setIp(clientSocket.getInetAddress());
             if (faulty) {
               System.out.println("Write invite, or not: ");
-              callHandler.faultyInvite = scanner.nextLine();
+              callHandler.faultyMsg = scanner.nextLine();
             }
             callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_INVITE);
 
@@ -109,27 +118,23 @@ public class Call{
             audioStream = new AudioStreamUDP();
             callHandler.setAudioStream(audioStream);
 
-            /*
-             * peerMessageListener.setIn(new BufferedReader(new
-             * InputStreamReader(clientSocket.getInputStream()))); out = new
-             * PrintWriter(clientSocket.getOutputStream(), true); in = new
-             * BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-             * peerMessageListener.setIn(in); callHandler.setOutPw(out);
-             * peerMessageListener.setAwaitingTroAck(true);
-             * System.out.println("awaitingtroack: " +
-             * peerMessageListener.getAwaitTroAck());
-             */
-
             callHandler.setIp(clientSocket.getInetAddress());
             if (faulty) {
               System.out.println("Write tro, or not: ");
-              callHandler.faultyTro = scanner.nextLine();
+              callHandler.faultyMsg = scanner.nextLine();
             }
             callHandler.processNextEvent(CallHandler.CallEvent.INVITE);
 
             break;
           case "hangup":
+          if (faulty) {
+            System.out.println("Write bye, or not: ");
+            callHandler.faultyMsg = scanner.nextLine();
+
+          }
+            
             callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_QUIT);
+            
             break;
           case "quit":
             doQuit = true;
@@ -151,7 +156,8 @@ public class Call{
             break;
           default:
             if(faulty){
-              callHandler.faultyAck = inSignal;
+
+              callHandler.faultyMsg = inSignal;
             }else{
               System.out.println(UNKOWN_COMMAND + "\n");
             }
@@ -159,7 +165,7 @@ public class Call{
             break;
           }
 
-          if (!callHandler.isCurrentStateBusy()) {
+          if (!callHandler.isCurrentStateBusy() && !callListener.getIncomingCall()) {
             doQuitToMenu = true;
           }
 
@@ -191,15 +197,15 @@ public class Call{
 
   }
 
-  public static void setFaultyAck(CallHandler callHandler) {
-    System.out.println("Write ack, or not: ");
-    while (callHandler.faultyAck == null) {
+  public static void setFaultyMsg(CallHandler callHandler) {
+    
+    while (callHandler.faultyMsg == null) {
       try{
-        Thread.sleep(100);
+        Thread.sleep(500);
       } catch(InterruptedException e){
+        e.printStackTrace();
       }
     }
-    System.out.println("faultyAck: "+ callHandler.faultyAck);
   }
 
 
@@ -211,75 +217,78 @@ public class Call{
     public CallHandler callHandler;
     private PeerMessageListener peerMessageListener;
     private AudioStreamUDP audioStream;
+    private boolean faulty;
 
-    private IncomingCallListener(AudioStreamUDP audioStream, CallHandler callHandler, ServerSocket serverSocket, Boolean incomingCall, Socket clientSocket){
+    private IncomingCallListener(AudioStreamUDP audioStream, CallHandler callHandler, ServerSocket serverSocket,
+        Boolean incomingCall, Socket clientSocket, boolean faulty) {
       this.serverSocket = serverSocket;
       this.incomingCall = incomingCall;
       this.clientSocket = null;
       this.callHandler = callHandler;
       this.audioStream = audioStream;
+      this.faulty = faulty;
       peerMessageListener = null;
       running = true;
 
     }
 
-
-
     @Override
-    public void run(){
-      try{
+    public void run() {
+      try {
 
-        while(running){
-            clientSocket = serverSocket.accept();
-            if(!callHandler.isCurrentStateBusy()){
-              BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-              String msg = in.readLine().toLowerCase().trim();
-              System.out.println(msg);
-              if(msg.equals("invite")){
-                incomingCall = true;
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                callHandler.setOutPw(out);
-                peerMessageListener = new PeerMessageListener(audioStream, serverSocket, clientSocket, in, callHandler, out);
-                peerMessageListener.setAwaitingTroAck(true);
-                Thread messageListenerThread = new Thread(peerMessageListener);
-                messageListenerThread.start();
-                System.out.println(INCOMING_CALL_MENU);
-              }else{
-                System.out.println("Received invalid invite message.");
-                incomingCall = false;
-                in.close();
-                clientSocket.close();
-              }
-
-            }else{
-              PrintWriter pw = new PrintWriter(clientSocket.getOutputStream(), true);
-              System.out.println("Incoming call, sending busy");
-              pw.println("busy");
-          /*    try{
-							  Thread.sleep(100);
-						  } catch(InterruptedException e){
-							  e.printStackTrace();
-              }*/
+        while (running) {
+          clientSocket = serverSocket.accept();
+          if (!callHandler.isCurrentStateBusy()) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            String msg = in.readLine().toLowerCase().trim();
+            System.out.println(msg);
+            if (msg.equals("invite")) {
+              incomingCall = true;
+              PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+              callHandler.setOutPw(out);
+              peerMessageListener = new PeerMessageListener(audioStream, serverSocket, clientSocket, in, callHandler,
+                  out, faulty);
+              peerMessageListener.setAwaitingTroAck(true);
+              Thread messageListenerThread = new Thread(peerMessageListener);
+              messageListenerThread.start();
+              System.out.println(INCOMING_CALL_MENU);
+            } else {
+              System.out.println("Received invalid invite message.");
+              incomingCall = false;
+              in.close();
+              clientSocket.close();
             }
+
+          } else {
+            PrintWriter pw = new PrintWriter(clientSocket.getOutputStream(), true);
+            System.out.println("Incoming call, sending busy");
+            pw.println("busy");
+            /*
+             * try{ Thread.sleep(100); } catch(InterruptedException e){ e.printStackTrace();
+             * }
+             */
           }
-      }
-      catch(SocketException se){
+        }
+      } catch (SocketException se) {
         se.printStackTrace();
-      }catch(IOException e){
+      } catch (IOException e) {
         e.printStackTrace();
 
-
-      }finally{
-        try{
-          if(clientSocket != null){
+      } finally {
+        try {
+          if (clientSocket != null) {
             clientSocket.close();
           }
-        }catch(IOException e){
+        } catch (IOException e) {
           e.printStackTrace();
         }
 
       }
 
+    }
+
+    public PeerMessageListener getPeerMessageListener() {
+      return peerMessageListener;
     }
 
     public void setIncommingCall(boolean bool){
@@ -299,21 +308,25 @@ public class Call{
       private ServerSocket serverSocket;
       private Socket clientSocket;
       private BufferedReader in;
-      private boolean inCall;
+      private boolean isInSession;
       private boolean awaitingTroAck;
       private CallHandler callHandler;
       private PrintWriter out;
       private boolean running;
+      private boolean inCall;
+      private boolean faulty;
 
-      private PeerMessageListener(AudioStreamUDP audioStream, ServerSocket serverSocket, Socket clientSocket, BufferedReader in, CallHandler callHandler, PrintWriter out){
+      private PeerMessageListener(AudioStreamUDP audioStream, ServerSocket serverSocket, Socket clientSocket, BufferedReader in, CallHandler callHandler, PrintWriter out, boolean faulty){
             this.serverSocket = serverSocket;
             this.clientSocket = clientSocket;
             this.in = in;
             inCall = false;
             this.callHandler = callHandler;
+            this.faulty = faulty;
             this.out = out;
             awaitingTroAck = false;
             running = true;
+            isInSession = false;
       }
 
       @Override
@@ -354,7 +367,12 @@ public class Call{
                         String udpPort = arr[1];
                         try{
                           int port = Integer.parseInt(udpPort);
-                          setFaultyAck(callHandler);
+                          if(faulty){
+                            callHandler.faultyMsg = null;
+                            System.out.println("Write ack, or not: ");
+                            setFaultyMsg(callHandler);
+                          }
+                          
                           callHandler.setUdpPort(port);
                           callHandler.processNextEvent(CallHandler.CallEvent.TRO);
                           message = "TRO";
@@ -389,22 +407,35 @@ public class Call{
 
                     switch(message.trim().toLowerCase()){
                       case "bye":
+                      if(faulty){
+                        callHandler.faultyMsg = null;
+                        System.out.println("Write ok, or not: ");
+                        setFaultyMsg(callHandler);
+                        System.out.println("faultiMsg: " + callHandler.faultyMsg);
+                      }
                         callHandler.processNextEvent(CallHandler.CallEvent.BYE);
-
+                        try{
+                          clientSocket.close();
+                          
+                        }catch(IOException e){
+                          System.out.println("Closing");
+                        }
+                        
+                        isInSession = false;
                         running = false;
                         break;
                       case "ok":
+                        isInSession = false;
                         callHandler.processNextEvent(CallHandler.CallEvent.OK);
 
                         running = false;
                         break;
                       case "tro":
-                        System.out.println("Received TRO" );
+                        isInSession = true;
                         clientSocket.setSoTimeout(0);
-
                         break;
                       case "ack":
-                        System.out.println("Received ACK");
+                        isInSession = true;
                         clientSocket.setSoTimeout(0);
                       break;
                       case "busy":
@@ -414,6 +445,7 @@ public class Call{
                       break;
                       case "timeout":
                         callHandler.processNextEvent(CallHandler.CallEvent.TIMEOUT);
+                        isInSession = false;
                         running = false;
                         break;
                       case "reject":
@@ -422,9 +454,14 @@ public class Call{
                           running = false;
                           break;
                       default:
-                        System.out.println("No message" + "\n" );
-                        running = false;
-
+                        if(isInSession){
+                          System.out.println("Received bad message, ignoring..");
+                        }else{
+                          System.out.println("Wrong message");
+                          callHandler.processNextEvent(CallHandler.CallEvent.TIMEOUT);
+                          running = false;
+                        }
+                        
                         break;
 
                     }
@@ -438,6 +475,11 @@ public class Call{
 
         //    }
         }
+
+      public Socket getClientSocket(){
+        return clientSocket;
+      }
+
 
       public void setAwaitingTroAck(boolean awaitingTroAck){
         this.awaitingTroAck = awaitingTroAck;

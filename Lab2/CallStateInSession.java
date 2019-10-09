@@ -7,49 +7,53 @@ public class CallStateInSession extends CallStateBusy{
 
   }
 
-  public CallState receivedBye(AudioStreamUDP audioStream,PrintWriter out, boolean faulty, Scanner scanner){
+  public CallState receivedBye(AudioStreamUDP audioStream,PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg){
     String msg = null;
     if(faulty){
-      scanner = new Scanner(System.in);
-      System.out.println("Type ok message:");
-      msg = scanner.nextLine();
-
+      msg = faultyMsg;
     }else{
       msg = "ok";
     }
+    
     try{
       out.println(msg);
     }catch(Exception e){
       System.out.println("Failed to send OK");
-      e.printStackTrace();
-    return new CallStateInSession();
     }
-    System.out.println("Going to state CallStateFree");
+    
     audioStream.stopStreaming();
+    System.out.println("Going to state CallStateFree");
     return new CallStateFree();
+    
+    
   }
 
-  public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner){
+  public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg){
     String msg = null;
     if(faulty){
-      scanner = new Scanner(System.in);
-      System.out.println("Type bye message:");
-      msg = scanner.nextLine();
-
+      msg = faultyMsg;
     }else{
       msg = "bye";
     }
-    try{
-      out.println(msg);
-    }catch(Exception e){
-      System.out.println("Failed to send BYE");
-      e.printStackTrace();
-    return new CallStateInSession();
+
+    if(msg.equals("bye")){
+      try{
+        out.println(msg);
+      }catch(Exception e){
+        audioStream.stopStreaming();
+        System.out.println("Failed to send BYE");
+        return new CallStateFree();
+      }
+      System.out.println("Going to state CallStateWaitQuitOK");
+      audioStream.stopStreaming();
+      return new CallStateWaitQuitOK();
     }
-    System.out.println("Going to state CallStateWaitQuitOK");
-    //audioStream.stopStreaming();
-    return new CallStateWaitQuitOK();
+      System.out.println("Wrong Bye-message");
+      return this;
+    
+    
   }
+
 
   public void printState(){
 	  System.out.println("State: In session");
