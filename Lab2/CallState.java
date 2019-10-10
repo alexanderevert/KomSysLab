@@ -10,58 +10,54 @@ public boolean busy(){
 }
 
 public CallState timedOut(){
-  error();
-  return new CallStateFree();
+  return error();
+
 }
 
 public CallState userWantsToInvite(boolean faulty,  String faultyMsg, Socket clientSocket){
-  error();
-  return new CallStateFree();
+  return error();
+
 }
 
 public void printState(){
 }
 
 public CallState receivedInvite(AudioStreamUDP audioStream, boolean faulty, String faultyMsg, Socket clientSocket){
-  error();
-  return new CallStateFree();
+  return error();
+
 }
 
 public CallState receivedTro(InetAddress ip, int udpPort, AudioStreamUDP audioStream, boolean faulty, String faultyMsg, Socket clientSocket) {
-  error();
-  return new CallStateFree();
+  return error();
 }
 
 
 public CallState userWantsToQuit(AudioStreamUDP audioStream, boolean faulty, String faultyMsg, Socket clientSocket) {
-  error();
-  return new CallStateFree();
+  return error();
+
 }
 
 public CallState receivedBye(AudioStreamUDP audioStream,  boolean faulty, String faultyMsg, Socket clientSocket) {
-  error();
-  return new CallStateFree();
+  return error();
+
 }
 
 public CallState receivedOk(AudioStreamUDP audioStream) {
-  error();
-  return new CallStateFree();
+  return error();
+
 }
 
 public CallState receivedAck(InetAddress ip, int udpPort, AudioStreamUDP audioStream, Socket clientSocket) {
-  error();
-  return new CallStateFree();
+  return error();
+
 }
 
 public CallState receivedBusy(){
-  error();
-  return new CallStateFree();
+  return error();
 }
 
 private CallState error(){
-  System.out.println("Going to state CallStateFree");
-  return new CallStateFree();
-
+  return error();
 }
 
 
