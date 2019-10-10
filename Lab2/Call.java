@@ -33,7 +33,6 @@ public class Call{
     int port = Integer.parseInt(args[0]);
     CallHandler callHandler = new CallHandler(out);
     callHandler.setFaulty(faulty);
-    Boolean incomingCall = false;
     BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
     boolean doQuit = false;
     boolean doQuitToMenu = false;
@@ -52,7 +51,7 @@ public class Call{
       }
 
       AudioStreamUDP audioStream = null;
-      IncomingCallListener callListener = new IncomingCallListener(audioStream, callHandler, serverSocket, incomingCall,
+      IncomingCallListener callListener = new IncomingCallListener(audioStream, callHandler, serverSocket,
           clientSocket, faulty);
       callListenerThread = new Thread(callListener);
       callListenerThread.start();
@@ -144,10 +143,7 @@ public class Call{
             callHandler.processNextEvent(CallHandler.CallEvent.BUSY);
             break;
           case "reject":
-            /*if (!callListener.getIncomingCall()) {
-              System.out.println("No incoming call");
-              break;
-            }*/
+
             if(callListener.getClient() != null){
               clientSocket = callListener.getClient();
               out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -171,7 +167,7 @@ public class Call{
             break;
           }
 
-          if (!callHandler.isCurrentStateBusy() && !callListener.getIncomingCall()) {
+          if (!callHandler.isCurrentStateBusy() && callListener.getClient() != null) {
             doQuitToMenu = true;
           }
 
@@ -219,16 +215,14 @@ public class Call{
     public boolean running;
     public ServerSocket serverSocket;
     public Socket clientSocket;
-    public Boolean incomingCall;
     public CallHandler callHandler;
     private PeerMessageListener peerMessageListener;
     private AudioStreamUDP audioStream;
     private boolean faulty;
 
     private IncomingCallListener(AudioStreamUDP audioStream, CallHandler callHandler, ServerSocket serverSocket,
-        Boolean incomingCall, Socket clientSocket, boolean faulty) {
+        Socket clientSocket, boolean faulty) {
       this.serverSocket = serverSocket;
-      this.incomingCall = incomingCall;
       this.clientSocket = null;
       this.callHandler = callHandler;
       this.audioStream = audioStream;
@@ -249,7 +243,6 @@ public class Call{
             String msg = in.readLine().toLowerCase().trim();
             System.out.println(msg);
             if (msg.equals("invite")) {
-              incomingCall = true;
               PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
               callHandler.setOutPw(out);
               peerMessageListener = new PeerMessageListener(audioStream, serverSocket, clientSocket, in, callHandler,
@@ -259,7 +252,6 @@ public class Call{
               System.out.println(INCOMING_CALL_MENU);
             } else {
               System.out.println("Received invalid invite message.");
-              incomingCall = false;
               in.close();
               clientSocket.close();
             }
@@ -296,9 +288,7 @@ public class Call{
       return peerMessageListener;
     }
 
-    public void setIncommingCall(boolean bool){
-      incomingCall = bool;
-    }
+
     public void setClientSocket(Socket clientSocket){
         this.clientSocket = clientSocket;
     }
@@ -306,10 +296,6 @@ public class Call{
         return clientSocket;
     }
 
-    public boolean getIncomingCall() throws InterruptedException{
-      Thread.sleep(1);
-      return incomingCall;
-    }
   }
 
   private static class PeerMessageListener implements Runnable{
