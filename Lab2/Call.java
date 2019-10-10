@@ -4,15 +4,10 @@ import java.net.*;
 import java.io.*;
 public class Call{
 
-
   private static String INCOMING_CALL_MENU = "\n INCOMING CALL(INVITE)...\n Answer / Reject?";
-
   private static String START_MENU = "*************************\n 1. Make call(call)\n 2. Quit(quit)\n*************************";
-
   private static String UNKOWN_COMMAND = "Unknown command.";
-  private static String INVITE_MESSAGE = "INVITE";
-
-
+  
   public static void main(String[] args) {
     boolean faulty = false;
     if (args.length < 1 || args.length > 2) {
@@ -24,12 +19,10 @@ public class Call{
         faulty = true;
       }
     }
-    System.out.println("Faulty: " + faulty);
     ServerSocket serverSocket = null;
     Socket clientSocket = null;
     BufferedReader in = null;
     PrintWriter out = null;
-    String ipAddress = null;
     int port = Integer.parseInt(args[0]);
     CallHandler callHandler = new CallHandler(out);
     callHandler.setFaulty(faulty);
@@ -38,8 +31,6 @@ public class Call{
     boolean doQuitToMenu = false;
     Thread callListenerThread = null;
     Scanner scanner = new Scanner(System.in);
-    callHandler.setScanner(scanner);
-    Thread troAckThread = null;
 
     try {
       try {
@@ -51,7 +42,7 @@ public class Call{
       }
 
       IncomingCallListener callListener = new IncomingCallListener(callHandler, serverSocket,
-          clientSocket, faulty);
+        clientSocket, faulty);
       callListenerThread = new Thread(callListener);
       callListenerThread.start();
       while (!doQuit) {
@@ -84,18 +75,14 @@ public class Call{
             }
 
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-            PeerMessageListener peerMessageListener = new PeerMessageListener(serverSocket, clientSocket,
-                in, callHandler, faulty);
+            PeerMessageListener peerMessageListener = new PeerMessageListener(clientSocket, in, callHandler, faulty);
             Thread messageListenerThread = new Thread(peerMessageListener);
-
             messageListenerThread.start();
             if (faulty) {
               System.out.println("Write invite, or not: ");
               callHandler.faultyMsg = scanner.nextLine();
             }
             callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_INVITE);
-
             break;
           case "answer":
 
@@ -108,22 +95,17 @@ public class Call{
               callHandler.faultyMsg = scanner.nextLine();
             }
             callHandler.processNextEvent(CallHandler.CallEvent.INVITE);
-
             break;
           case "hangup":
           if (faulty) {
             System.out.println("Write bye, or not: ");
             callHandler.faultyMsg = scanner.nextLine();
-
           }
-
             callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_QUIT);
-
             break;
           case "quit":
             doQuit = true;
             doQuitToMenu = true;
-
             break;
           case "busy":
             callHandler.processNextEvent(CallHandler.CallEvent.BUSY);
@@ -150,16 +132,12 @@ public class Call{
             }else{
               System.out.println(UNKOWN_COMMAND + "\n");
             }
-
             break;
           }
-
           if (!callHandler.isCurrentStateBusy() && callListener.getClient() != null) {
             doQuitToMenu = true;
           }
-
         }
-
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -183,11 +161,9 @@ public class Call{
       if (scanner != null)
         scanner.close();
     }
-
   }
 
   public static void setFaultyMsg(CallHandler callHandler) {
-
     while (callHandler.faultyMsg == null) {
       try{
         Thread.sleep(500);
@@ -197,7 +173,6 @@ public class Call{
     }
   }
 
-
   private static class IncomingCallListener implements Runnable{
     public boolean running;
     public ServerSocket serverSocket;
@@ -206,21 +181,18 @@ public class Call{
     private PeerMessageListener peerMessageListener;
     private boolean faulty;
 
-    private IncomingCallListener( CallHandler callHandler, ServerSocket serverSocket,
-        Socket clientSocket, boolean faulty) {
+    private IncomingCallListener( CallHandler callHandler, ServerSocket serverSocket, Socket clientSocket, boolean faulty) {
       this.serverSocket = serverSocket;
       this.clientSocket = null;
       this.callHandler = callHandler;
       this.faulty = faulty;
       peerMessageListener = null;
       running = true;
-
     }
 
     @Override
     public void run() {
       try {
-
         while (running) {
           clientSocket = serverSocket.accept();
           if (!callHandler.isCurrentStateBusy()) {
@@ -228,7 +200,7 @@ public class Call{
             String msg = in.readLine().toLowerCase().trim();
             System.out.println(msg);
             if (msg.equals("invite")) {
-              peerMessageListener = new PeerMessageListener(serverSocket, clientSocket, in, callHandler,
+              peerMessageListener = new PeerMessageListener(clientSocket, in, callHandler,
                   faulty);
               Thread messageListenerThread = new Thread(peerMessageListener);
               messageListenerThread.start();
@@ -243,7 +215,9 @@ public class Call{
             PrintWriter pw = new PrintWriter(clientSocket.getOutputStream(), true);
             System.out.println("Incoming call, sending busy");
             pw.println("busy");
-
+            if(pw != null){
+              pw.close();
+            }///// Här kanske vi kan ha något slags dissconnet/cleanup?   
           }
         }
       } catch (SocketException se) {
@@ -259,35 +233,22 @@ public class Call{
         } catch (IOException e) {
           e.printStackTrace();
         }
-
       }
-
     }
 
-    public PeerMessageListener getPeerMessageListener() {
-      return peerMessageListener;
-    }
-
-
-    public void setClientSocket(Socket clientSocket){
-        this.clientSocket = clientSocket;
-    }
     public Socket getClient(){
         return clientSocket;
     }
-
   }
 
   private static class PeerMessageListener implements Runnable{
-      private ServerSocket serverSocket;
       private Socket clientSocket;
       private BufferedReader in;
       private CallHandler callHandler;
       private boolean running;
       private boolean faulty;
 
-      private PeerMessageListener(ServerSocket serverSocket, Socket clientSocket, BufferedReader in, CallHandler callHandler, boolean faulty){
-            this.serverSocket = serverSocket;
+      private PeerMessageListener(Socket clientSocket, BufferedReader in, CallHandler callHandler, boolean faulty){
             this.clientSocket = clientSocket;
             this.in = in;
             this.callHandler = callHandler;
@@ -300,7 +261,6 @@ public class Call{
       public void run(){
         try{
           clientSocket.setSoTimeout(20000);
-
         }catch(SocketException e){
           e.printStackTrace();
         }
@@ -322,14 +282,11 @@ public class Call{
                     message = "timeout";
                   }
                     System.out.println("Received: " + message);
-
                     if(message.startsWith("tro")){
-
                       String[] arr = message.split(",");
                       if(arr.length != 2){
                         message = "ERROR";
                       }else{
-
                         String udpPort = arr[1];
                         try{
                           int port = Integer.parseInt(udpPort);
@@ -345,10 +302,7 @@ public class Call{
                         }catch(NumberFormatException e){
                           System.out.println("Could not read port number");
                         }
-
-
                       }
-
                     }else if(message.startsWith("ack")){
                       String[] arr = message.split(",");
                       if(arr.length != 2){
@@ -365,8 +319,7 @@ public class Call{
                         }
                       }
                     }
-                    CallState nextCallState = null;
-
+                   
 
                     switch(message.trim().toLowerCase()){
                       case "bye":
@@ -407,13 +360,7 @@ public class Call{
                           running = false;
                         break;
                     }
-
               }
         }
-      public void setIn(BufferedReader in){
-        this.in = in;
-      }
-
     }
-
 }

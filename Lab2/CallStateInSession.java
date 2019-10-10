@@ -43,7 +43,6 @@ public class CallStateInSession extends CallStateBusy{
     }catch(IOException e){
       e.printStackTrace();
     }
-
     String msg = null;
     if(faulty){
       msg = faultyMsg;
@@ -51,7 +50,7 @@ public class CallStateInSession extends CallStateBusy{
       msg = "bye";
     }
 
-    if(msg.equals("bye")){
+    //if(msg.equals("bye")){
       try{
         out.println(msg);
       }catch(Exception e){
@@ -61,25 +60,30 @@ public class CallStateInSession extends CallStateBusy{
       }
       System.out.println("Going to state CallStateWaitQuitOK");
       audioStream.stopStreaming();
+      
+      
       try{
-        clientSocket.setSoTimeout(5000);
-
+        clientSocket.setSoTimeout(5000); // readlinen i call får in timeout
       }catch(SocketException e ){
         System.out.println("Timeout on OK");
-        try{
-          clientSocket.close();
-
+        if (out != null) out.close();
+        error();
+      }
+        /*try{
+          clientSocket.close(); // closa socket mm i waitquitok timeout()
         }catch(Exception ie){
           ie.printStackTrace();
         }
         return error();
       }
+      if (out != null) out.close();
       return new CallStateWaitQuitOK();
-    }
+    }else{
       System.out.println("Wrong Bye-message");
       return this;
+    }*/
+    return new CallStateWaitQuitOK();
   }
-
 
   public void printState(){
 	  System.out.println("State: In session");

@@ -13,14 +13,13 @@ public class CallStateWaitAck extends CallStateBusy{
       audioStream.startStreaming();
     }catch(IOException e){
       System.out.println("UDP Connection error");
-      return new CallStateFree();
+      error();
     }
     try{
       clientSocket.setSoTimeout(0);
-
     }catch(SocketException e){
-      System.out.println("Going to state CallStateFree");
-      return new CallStateFree();
+      System.out.println("Failed to set TimeOut");
+      error();
     }
     System.out.println("Going to state CallStateInSession");
     return new CallStateInSession();

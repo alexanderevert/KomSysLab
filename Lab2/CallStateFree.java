@@ -14,9 +14,9 @@ public class CallStateFree extends CallState {
     try{
       out = new PrintWriter(clientSocket.getOutputStream(), true);
     }catch(IOException e){
-      e.printStackTrace();
+      System.out.println("Failed to create PrintWriter");
+      error();
     }
-
     if(faulty){
       msg = faultyMsg;
     }else{
@@ -26,9 +26,9 @@ public class CallStateFree extends CallState {
         out.println(msg);
     }catch(Exception e){
         System.out.println("Failed to send INVITE");
-        e.printStackTrace();
-      return new CallStateFree();
+        error();
     }
+
     System.out.println("Going to state CallStateWaitTRO");
     System.out.println("Ringing...");
     return new CallStateWaitTRO();
@@ -40,7 +40,8 @@ public class CallStateFree extends CallState {
     try{
       out = new PrintWriter(clientSocket.getOutputStream(), true);
     }catch(IOException e){
-      e.printStackTrace();
+      System.out.println("Failed to create PrintWriter");
+      error();
     }
     if(faulty){
       msg = faultyMsg;
@@ -51,13 +52,12 @@ public class CallStateFree extends CallState {
       out.println(msg + "," + audioStream.getLocalPort());
     }catch(Exception e){
       System.out.println("Failed to send TRO");
-      e.printStackTrace();
+      error();
     return new CallStateFree();
     }
     System.out.println("Going to state CallStateWaitAck");
     return new CallStateWaitAck();
   }
-
 
   public void printState(){
 	  System.out.println("State: Free");

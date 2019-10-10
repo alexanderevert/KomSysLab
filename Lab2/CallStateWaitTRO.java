@@ -14,15 +14,13 @@ public class CallStateWaitTRO extends CallStateBusy{
     }
 
     public CallState receivedTro(InetAddress ip, int udpPort, AudioStreamUDP audioStream, boolean faulty, String faultyMsg, Socket clientSocket){
-
-
       String msg = null;
-
       PrintWriter out = null;
       try{
         out = new PrintWriter(clientSocket.getOutputStream(), true);
       }catch(IOException e){
-        e.printStackTrace();
+        System.out.println("Failed to create PrintWriter");
+        error();
       }
 
       if(faulty){
