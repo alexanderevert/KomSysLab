@@ -57,7 +57,7 @@ public class CallStateInSession extends CallStateBusy{
       }catch(Exception e){
         audioStream.stopStreaming();
         System.out.println("Failed to send BYE");
-        return new CallStateFree();
+        return error();
       }
       System.out.println("Going to state CallStateWaitQuitOK");
       audioStream.stopStreaming();
@@ -72,7 +72,7 @@ public class CallStateInSession extends CallStateBusy{
         }catch(Exception ie){
           ie.printStackTrace();
         }
-        return new CallStateFree();
+        return error();
       }
       return new CallStateWaitQuitOK();
     }

@@ -16,7 +16,6 @@ public CallState timedOut(){
 
 public CallState userWantsToInvite(boolean faulty,  String faultyMsg, Socket clientSocket){
   return error();
-
 }
 
 public void printState(){
