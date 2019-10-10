@@ -7,28 +7,43 @@ public class CallStateInSession extends CallStateBusy{
 
   }
 
-  public CallState receivedBye(AudioStreamUDP audioStream,PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg){
+  public CallState receivedBye(AudioStreamUDP audioStream, boolean faulty, String faultyMsg, Socket clientSocket){
+
+    PrintWriter out = null;
+    try{
+      out = new PrintWriter(clientSocket.getOutputStream(), true);
+    }catch(IOException e){
+      e.printStackTrace();
+    }
+
     String msg = null;
     if(faulty){
       msg = faultyMsg;
     }else{
       msg = "ok";
     }
-    
+
     try{
       out.println(msg);
     }catch(Exception e){
       System.out.println("Failed to send OK");
     }
-    
+
     audioStream.stopStreaming();
     System.out.println("Going to state CallStateFree");
     return new CallStateFree();
-    
-    
+
+
   }
 
-  public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg){
+  public CallState userWantsToQuit(AudioStreamUDP audioStream, boolean faulty,  String faultyMsg, Socket clientSocket){
+    PrintWriter out = null;
+    try{
+      out = new PrintWriter(clientSocket.getOutputStream(), true);
+    }catch(IOException e){
+      e.printStackTrace();
+    }
+
     String msg = null;
     if(faulty){
       msg = faultyMsg;
@@ -46,12 +61,23 @@ public class CallStateInSession extends CallStateBusy{
       }
       System.out.println("Going to state CallStateWaitQuitOK");
       audioStream.stopStreaming();
+      try{
+        clientSocket.setSoTimeout(5000);
+
+      }catch(SocketException e ){
+        System.out.println("Timeout on OK");
+        try{
+          clientSocket.close();
+
+        }catch(Exception ie){
+          ie.printStackTrace();
+        }
+        return new CallStateFree();
+      }
       return new CallStateWaitQuitOK();
     }
       System.out.println("Wrong Bye-message");
       return this;
-    
-    
   }
 
 

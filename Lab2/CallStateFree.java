@@ -8,8 +8,15 @@ public class CallStateFree extends CallState {
 
   }
 
-  public CallState userWantsToInvite(PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg){
+  public CallState userWantsToInvite(boolean faulty, String faultyMsg, Socket clientSocket){
     String msg = null;
+    PrintWriter out = null;
+    try{
+      out = new PrintWriter(clientSocket.getOutputStream(), true);
+    }catch(IOException e){
+      e.printStackTrace();
+    }
+
     if(faulty){
       msg = faultyMsg;
     }else{
@@ -27,8 +34,14 @@ public class CallStateFree extends CallState {
     return new CallStateWaitTRO();
   }
 
-  public CallState receivedInvite(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg){
+  public CallState receivedInvite(AudioStreamUDP audioStream, boolean faulty, String faultyMsg, Socket clientSocket){
     String msg = null;
+    PrintWriter out = null;
+    try{
+      out = new PrintWriter(clientSocket.getOutputStream(), true);
+    }catch(IOException e){
+      e.printStackTrace();
+    }
     if(faulty){
       msg = faultyMsg;
     }else{

@@ -14,7 +14,7 @@ public CallState timedOut(){
   return new CallStateFree();
 }
 
-public CallState userWantsToInvite(PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg){
+public CallState userWantsToInvite(boolean faulty,  String faultyMsg, Socket clientSocket){
   error();
   return new CallStateFree();
 }
@@ -22,22 +22,23 @@ public CallState userWantsToInvite(PrintWriter out, boolean faulty, Scanner scan
 public void printState(){
 }
 
-public CallState receivedInvite(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg){
+public CallState receivedInvite(AudioStreamUDP audioStream, boolean faulty, String faultyMsg, Socket clientSocket){
   error();
   return new CallStateFree();
 }
 
-public CallState receivedTro(InetAddress ip, int udpPort, AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg) {
+public CallState receivedTro(InetAddress ip, int udpPort, AudioStreamUDP audioStream, boolean faulty, String faultyMsg, Socket clientSocket) {
   error();
   return new CallStateFree();
 }
 
 
-public CallState userWantsToQuit(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg) {
+public CallState userWantsToQuit(AudioStreamUDP audioStream, boolean faulty, String faultyMsg, Socket clientSocket) {
   error();
   return new CallStateFree();
 }
-public CallState receivedBye(AudioStreamUDP audioStream, PrintWriter out, boolean faulty, Scanner scanner, String faultyMsg) {
+
+public CallState receivedBye(AudioStreamUDP audioStream,  boolean faulty, String faultyMsg, Socket clientSocket) {
   error();
   return new CallStateFree();
 }
@@ -47,7 +48,7 @@ public CallState receivedOk(AudioStreamUDP audioStream) {
   return new CallStateFree();
 }
 
-public CallState receivedAck(InetAddress ip, int udpPort, AudioStreamUDP audioStream) {
+public CallState receivedAck(InetAddress ip, int udpPort, AudioStreamUDP audioStream, Socket clientSocket) {
   error();
   return new CallStateFree();
 }
@@ -57,8 +58,10 @@ public CallState receivedBusy(){
   return new CallStateFree();
 }
 
-private void error(){
+private CallState error(){
   System.out.println("Going to state CallStateFree");
+  return new CallStateFree();
+
 }
 
 

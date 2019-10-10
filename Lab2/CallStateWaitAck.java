@@ -6,13 +6,20 @@ public class CallStateWaitAck extends CallStateBusy{
   public CallStateWaitAck(){
   }
 
-  public CallState receivedAck(InetAddress ip, int udpPort, AudioStreamUDP audioStream){
+  public CallState receivedAck(InetAddress ip, int udpPort, AudioStreamUDP audioStream, Socket clientSocket){
     try{
-      audioStream.connectTo(ip, udpPort);
+      audioStream.connectTo(clientSocket.getInetAddress(), udpPort);
       System.out.println("To hang up: <hangup>");
       audioStream.startStreaming();
     }catch(IOException e){
       System.out.println("UDP Connection error");
+      return new CallStateFree();
+    }
+    try{
+      clientSocket.setSoTimeout(0);
+
+    }catch(SocketException e){
+      System.out.println("Going to state CallStateFree");
       return new CallStateFree();
     }
     System.out.println("Going to state CallStateInSession");

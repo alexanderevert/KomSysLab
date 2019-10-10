@@ -25,8 +25,18 @@ public class CallHandler{
   private Scanner scanner;
   public String faultyMsg = null;
 
+  private Socket clientSocket;
+
+
+
   public CallHandler(PrintWriter out){
     currentState = new CallStateFree();
+
+    try{
+      audioStream = new AudioStreamUDP();
+    }catch(IOException e){
+      e.printStackTrace();
+    }
     //this.out = out;
     this.out = out;
   }
@@ -34,18 +44,18 @@ public class CallHandler{
   public void processNextEvent(CallEvent event){
     switch(event){
       case INVITE:
-      currentState = currentState.receivedInvite(audioStream, out, faulty, scanner, faultyMsg);
+      currentState = currentState.receivedInvite(audioStream, faulty, faultyMsg, clientSocket);
       faultyMsg = null;
       break;
 
       case TRO:
-      currentState = currentState.receivedTro(ip, udpPort, audioStream, out, faulty, scanner, faultyMsg);
+      currentState = currentState.receivedTro(ip, udpPort, audioStream,  faulty, faultyMsg, clientSocket);
       faultyMsg = null;
       break;
 
       case ACK:
 
-      currentState = currentState.receivedAck(ip, udpPort, audioStream);
+      currentState = currentState.receivedAck(ip, udpPort, audioStream, clientSocket);
       break;
 
       case TIMEOUT:
@@ -53,7 +63,7 @@ public class CallHandler{
       break;
 
       case BYE:
-      currentState = currentState.receivedBye(audioStream, out, faulty, scanner, faultyMsg);
+      currentState = currentState.receivedBye(audioStream, faulty, faultyMsg, clientSocket);
       faultyMsg = null;
       break;
 
@@ -62,12 +72,12 @@ public class CallHandler{
       break;
 
       case USER_WANTS_TO_INVITE:
-      currentState = currentState.userWantsToInvite(out, faulty, scanner, faultyMsg);
+      currentState = currentState.userWantsToInvite(faulty,  faultyMsg, clientSocket);
       faultyMsg = null;
       break;
 
       case USER_WANTS_TO_QUIT:
-      currentState = currentState.userWantsToQuit(audioStream, out, faulty, scanner, faultyMsg);
+      currentState = currentState.userWantsToQuit(audioStream, faulty, faultyMsg, clientSocket);
       faultyMsg = null;
       break;
       case BUSY:
@@ -90,10 +100,6 @@ public class CallHandler{
     this.udpPort = port;
   }
 
-  public void setAudioStream(AudioStreamUDP audioStream){
-    this.audioStream = audioStream;
-  }
-
   public void setOutPw(PrintWriter out){
     this.out = out;
   }
@@ -110,6 +116,10 @@ public class CallHandler{
     this.faulty = faulty;
   }
 
+
+  public void setClientSocket(Socket clientSocket){
+    this.clientSocket = clientSocket;
+  }
 
 
 }
