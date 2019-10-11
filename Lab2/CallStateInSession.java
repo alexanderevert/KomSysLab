@@ -43,6 +43,7 @@ public class CallStateInSession extends CallStateBusy{
     }catch(IOException e){
       e.printStackTrace();
     }
+
     String msg = null;
     if(faulty){
       msg = faultyMsg;
@@ -50,7 +51,7 @@ public class CallStateInSession extends CallStateBusy{
       msg = "bye";
     }
 
-    //if(msg.equals("bye")){
+    if(msg.equals("bye")){
       try{
         out.println(msg);
       }catch(Exception e){
@@ -58,31 +59,26 @@ public class CallStateInSession extends CallStateBusy{
         System.out.println("Failed to send BYE");
         return error();
       }
-      System.out.println("Going to state CallStateWaitQuitOK");
-      audioStream.stopStreaming();
-      
       
       try{
-        clientSocket.setSoTimeout(5000); // readlinen i call får in timeout
+        clientSocket.setSoTimeout(5000);
       }catch(SocketException e ){
-        System.out.println("Timeout on OK");
-        if (out != null) out.close();
-        error();
-      }
-        /*try{
-          clientSocket.close(); // closa socket mm i waitquitok timeout()
+        System.out.println("Timeout on OK"); // timeouten kommer väl i messageListener?
+        try{
+          clientSocket.close();
         }catch(Exception ie){
           ie.printStackTrace();
         }
         return error();
       }
-      if (out != null) out.close();
+      System.out.println("Going to state CallStateWaitQuitOK");
+      audioStream.stopStreaming();
       return new CallStateWaitQuitOK();
-    }else{
+    }
       System.out.println("Wrong Bye-message");
-      return this;
-    }*/
-    return new CallStateWaitQuitOK();
+      audioStream.stopStreaming();
+
+      return error();
   }
 
   public void printState(){

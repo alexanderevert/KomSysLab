@@ -1,5 +1,4 @@
 import java.util.*;
-
 import java.net.*;
 import java.io.*;
 public class Call{
@@ -32,15 +31,16 @@ public class Call{
     Thread callListenerThread = null;
     Scanner scanner = new Scanner(System.in);
 
+    
+
     try {
       try {
         serverSocket = new ServerSocket(port);
-
       } catch (IOException e) {
         System.err.println("Failed to listen to port: " + port);
         System.exit(1);
       }
-
+      
       IncomingCallListener callListener = new IncomingCallListener(callHandler, serverSocket,
         clientSocket, faulty);
       callListenerThread = new Thread(callListener);
@@ -127,7 +127,6 @@ public class Call{
             break;
           default:
             if(faulty){
-
               callHandler.faultyMsg = inSignal;
             }else{
               System.out.println(UNKOWN_COMMAND + "\n");
@@ -142,7 +141,6 @@ public class Call{
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
-
       try {
         if (callListenerThread != null)
           callListenerThread.stop();
@@ -173,82 +171,14 @@ public class Call{
     }
   }
 
-  private static class IncomingCallListener implements Runnable{
-    public boolean running;
-    public ServerSocket serverSocket;
-    public Socket clientSocket;
-    public CallHandler callHandler;
-    private PeerMessageListener peerMessageListener;
-    private boolean faulty;
-
-    private IncomingCallListener( CallHandler callHandler, ServerSocket serverSocket, Socket clientSocket, boolean faulty) {
-      this.serverSocket = serverSocket;
-      this.clientSocket = null;
-      this.callHandler = callHandler;
-      this.faulty = faulty;
-      peerMessageListener = null;
-      running = true;
-    }
-
-    @Override
-    public void run() {
-      try {
-        while (running) {
-          clientSocket = serverSocket.accept();
-          if (!callHandler.isCurrentStateBusy()) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String msg = in.readLine().toLowerCase().trim();
-            System.out.println(msg);
-            if (msg.equals("invite")) {
-              peerMessageListener = new PeerMessageListener(clientSocket, in, callHandler,
-                  faulty);
-              Thread messageListenerThread = new Thread(peerMessageListener);
-              messageListenerThread.start();
-              System.out.println(INCOMING_CALL_MENU);
-            } else {
-              System.out.println("Received invalid invite message.");
-              in.close();
-              clientSocket.close();
-            }
-
-          } else {
-            PrintWriter pw = new PrintWriter(clientSocket.getOutputStream(), true);
-            System.out.println("Incoming call, sending busy");
-            pw.println("busy");
-            if(pw != null){
-              pw.close();
-            }///// Här kanske vi kan ha något slags dissconnet/cleanup?   
-          }
-        }
-      } catch (SocketException se) {
-        se.printStackTrace();
-      } catch (IOException e) {
-        e.printStackTrace();
-
-      } finally {
-        try {
-          if (clientSocket != null) {
-            clientSocket.close();
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-    }
-
-    public Socket getClient(){
-        return clientSocket;
-    }
-  }
-
-  private static class PeerMessageListener implements Runnable{
+  public static class PeerMessageListener implements Runnable{
       private Socket clientSocket;
       private BufferedReader in;
       private CallHandler callHandler;
       private boolean running;
       private boolean faulty;
 
-      private PeerMessageListener(Socket clientSocket, BufferedReader in, CallHandler callHandler, boolean faulty){
+      public PeerMessageListener(Socket clientSocket, BufferedReader in, CallHandler callHandler, boolean faulty){
             this.clientSocket = clientSocket;
             this.in = in;
             this.callHandler = callHandler;
@@ -268,7 +198,6 @@ public class Call{
               try{
 							  Thread.sleep(100);
 						  } catch(InterruptedException e){
-							  e.printStackTrace();
               }
                 String message = null;
                   try{
@@ -319,7 +248,6 @@ public class Call{
                         }
                       }
                     }
-                   
 
                     switch(message.trim().toLowerCase()){
                       case "bye":
