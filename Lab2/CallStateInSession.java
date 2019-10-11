@@ -63,12 +63,13 @@ public class CallStateInSession extends CallStateBusy{
       try{
         clientSocket.setSoTimeout(5000);
       }catch(SocketException e ){
-        System.out.println("Timeout on OK"); // timeouten kommer väl i messageListener?
+        System.out.println("Could not set timeout");
         try{
           clientSocket.close();
         }catch(Exception ie){
           ie.printStackTrace();
         }
+
         return error();
       }
       System.out.println("Going to state CallStateWaitQuitOK");

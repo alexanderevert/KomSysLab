@@ -3,7 +3,6 @@ import java.net.*;
 import java.io.*;
 public class Call{
 
-  private static String INCOMING_CALL_MENU = "\n INCOMING CALL(INVITE)...\n Answer / Reject?";
   private static String START_MENU = "*************************\n 1. Make call(call)\n 2. Quit(quit)\n*************************";
   private static String UNKOWN_COMMAND = "Unknown command.";
   
@@ -31,8 +30,6 @@ public class Call{
     Thread callListenerThread = null;
     Scanner scanner = new Scanner(System.in);
 
-    
-
     try {
       try {
         serverSocket = new ServerSocket(port);
@@ -55,6 +52,7 @@ public class Call{
           String callArr[] = inSignal.split(" ", 3);
           inSignal = callArr[0];
           inSignal.toLowerCase();
+
           switch (inSignal) {
           case "call":
             try {
@@ -80,26 +78,27 @@ public class Call{
             messageListenerThread.start();
             if (faulty) {
               System.out.println("Write invite, or not: ");
-              callHandler.faultyMsg = scanner.nextLine();
+              callHandler.setFaultyMessage(scanner.nextLine());
             }
             callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_INVITE);
             break;
-          case "answer":
 
+          case "answer":
             if (callListener.getClient() == null) {
               System.out.println("No incoming call");
               break;
             }
             if (faulty) {
               System.out.println("Write tro, or not: ");
-              callHandler.faultyMsg = scanner.nextLine();
+              callHandler.setFaultyMessage(scanner.nextLine());
             }
             callHandler.processNextEvent(CallHandler.CallEvent.INVITE);
             break;
+
           case "hangup":
           if (faulty) {
             System.out.println("Write bye, or not: ");
-            callHandler.faultyMsg = scanner.nextLine();
+            callHandler.setFaultyMessage(scanner.nextLine());
           }
             callHandler.processNextEvent(CallHandler.CallEvent.USER_WANTS_TO_QUIT);
             break;
@@ -127,7 +126,7 @@ public class Call{
             break;
           default:
             if(faulty){
-              callHandler.faultyMsg = inSignal;
+              callHandler.setFaultyMessage(inSignal);
             }else{
               System.out.println(UNKOWN_COMMAND + "\n");
             }
@@ -162,7 +161,7 @@ public class Call{
   }
 
   public static void setFaultyMsg(CallHandler callHandler) {
-    while (callHandler.faultyMsg == null) {
+    while (callHandler.getFaultyMessage() == null) {
       try{
         Thread.sleep(500);
       } catch(InterruptedException e){
@@ -171,124 +170,5 @@ public class Call{
     }
   }
 
-  public static class PeerMessageListener implements Runnable{
-      private Socket clientSocket;
-      private BufferedReader in;
-      private CallHandler callHandler;
-      private boolean running;
-      private boolean faulty;
-
-      public PeerMessageListener(Socket clientSocket, BufferedReader in, CallHandler callHandler, boolean faulty){
-            this.clientSocket = clientSocket;
-            this.in = in;
-            this.callHandler = callHandler;
-            this.faulty = faulty;
-            running = true;
-            callHandler.setClientSocket(clientSocket);
-      }
-
-      @Override
-      public void run(){
-        try{
-          clientSocket.setSoTimeout(20000);
-        }catch(SocketException e){
-          e.printStackTrace();
-        }
-            while(running){
-              try{
-							  Thread.sleep(100);
-						  } catch(InterruptedException e){
-              }
-                String message = null;
-                  try{
-                    message = in.readLine();
-                  } catch(Exception e){
-                    System.out.println("Connection timeout");
-                    message = "timeout";
-                    running = false;
-                  }
-                  if(message == null){
-                    message = "timeout";
-                  }
-                    System.out.println("Received: " + message);
-                    if(message.startsWith("tro")){
-                      String[] arr = message.split(",");
-                      if(arr.length != 2){
-                        message = "ERROR";
-                      }else{
-                        String udpPort = arr[1];
-                        try{
-                          int port = Integer.parseInt(udpPort);
-                          if(faulty){
-                            callHandler.faultyMsg = null;
-                            System.out.println("Write ack, or not: ");
-                            setFaultyMsg(callHandler);
-                          }
-
-                          callHandler.setUdpPort(port);
-                          callHandler.processNextEvent(CallHandler.CallEvent.TRO);
-                          message = "TRO";
-                        }catch(NumberFormatException e){
-                          System.out.println("Could not read port number");
-                        }
-                      }
-                    }else if(message.startsWith("ack")){
-                      String[] arr = message.split(",");
-                      if(arr.length != 2){
-                        message = "ERROR";
-                      }else{
-                        String udpPort = arr[1];
-                        try{
-                          int port = Integer.parseInt(udpPort);
-                          callHandler.setUdpPort(port);
-                          callHandler.processNextEvent(CallHandler.CallEvent.ACK);
-                          message = "ACK";
-                        }catch(NumberFormatException e){
-                          System.out.println("Could not read port number");
-                        }
-                      }
-                    }
-
-                    switch(message.trim().toLowerCase()){
-                      case "bye":
-                      if(faulty){
-                        callHandler.faultyMsg = null;
-                        System.out.println("Write ok, or not: ");
-                        setFaultyMsg(callHandler);
-                        System.out.println("faultiMsg: " + callHandler.faultyMsg);
-                        }
-                        callHandler.processNextEvent(CallHandler.CallEvent.BYE);
-                        running = false;
-                        break;
-                      case "ok":
-                        callHandler.processNextEvent(CallHandler.CallEvent.OK);
-
-                        running = false;
-                        break;
-                      case "tro":
-                        break;
-                      case "ack":
-                        break;
-                      case "busy":
-                        System.out.println("Busy");
-                        callHandler.processNextEvent(CallHandler.CallEvent.BUSY);
-                        running = false;
-                      break;
-                      case "timeout":
-                        callHandler.processNextEvent(CallHandler.CallEvent.TIMEOUT);
-                        running = false;
-                        break;
-                      case "reject":
-                          callHandler.processNextEvent(CallHandler.CallEvent.TIMEOUT);
-                          running = false;
-                          break;
-                      default:
-                          System.out.println("Wrong message");
-                          callHandler.processNextEvent(CallHandler.CallEvent.TIMEOUT);
-                          running = false;
-                        break;
-                    }
-              }
-        }
-    }
+  
 }

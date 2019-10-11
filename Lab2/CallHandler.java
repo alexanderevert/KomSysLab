@@ -21,8 +21,9 @@ public class CallHandler{
   private int udpPort;
   private InetAddress ip;
   private boolean faulty;
-  public String faultyMsg = null;
+  private String faultyMsg = null;
   private Socket clientSocket;
+  private String incommingMsg;
 
   public CallHandler(PrintWriter out){
     currentState = new CallStateFree();
@@ -82,6 +83,18 @@ public class CallHandler{
 
   public void setIp(InetAddress ip){
     this.ip = ip;
+  }
+
+  public void setFaultyMessage(String faultyMsg){
+    this.faultyMsg = faultyMsg;
+  }
+
+  public String getFaultyMessage(){
+    return faultyMsg;
+  }
+
+  public void setIncommingMessage(String incommingMsg){
+    this.incommingMsg = incommingMsg;
   }
 
   public void setUdpPort(int port){

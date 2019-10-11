@@ -2,14 +2,12 @@ import java.util.*;
 import java.net.*;
 import java.io.*;
 
-  
-
 class IncomingCallListener implements Runnable{
     public boolean running;
     public ServerSocket serverSocket;
     public Socket clientSocket;
     public CallHandler callHandler;
-    private Call.PeerMessageListener peerMessageListener;
+    private PeerMessageListener peerMessageListener;
     private boolean faulty;
     private static String INCOMING_CALL_MENU = "\n INCOMING CALL(INVITE)...\n Answer / Reject?";
 
@@ -31,23 +29,28 @@ class IncomingCallListener implements Runnable{
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             String msg = in.readLine().toLowerCase().trim();
             System.out.println(msg);
+
             if (msg.equals("invite")) {
-              peerMessageListener = new Call.PeerMessageListener(clientSocket, in, callHandler, faulty);
+              peerMessageListener = new PeerMessageListener(clientSocket, in, callHandler, faulty);
               Thread messageListenerThread = new Thread(peerMessageListener);
               messageListenerThread.start();
               System.out.println(INCOMING_CALL_MENU);
             } else {
               System.out.println("Received invalid invite message.");
+              System.out.println("State: CallStateFree");
+              System.out.println(INCOMING_CALL_MENU);
               in.close();
               clientSocket.close();
             }
-
           } else {
             PrintWriter pw = new PrintWriter(clientSocket.getOutputStream(), true);
             System.out.println("Incoming call, sending busy");
             pw.println("busy");
             if(pw != null){
               pw.close();
+            }
+            if(clientSocket != null){
+              clientSocket.close();
             }///// Här kanske vi kan ha något slags dissconnet/cleanup?   
           }
         }
