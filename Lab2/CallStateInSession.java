@@ -59,7 +59,7 @@ public class CallStateInSession extends CallStateBusy{
         System.out.println("Failed to send BYE");
         return error();
       }
-      
+
       try{
         clientSocket.setSoTimeout(5000);
       }catch(SocketException e ){
@@ -77,9 +77,8 @@ public class CallStateInSession extends CallStateBusy{
       return new CallStateWaitQuitOK();
     }
       System.out.println("Wrong Bye-message");
-      audioStream.stopStreaming();
 
-      return error();
+      return this;
   }
 
   public void printState(){

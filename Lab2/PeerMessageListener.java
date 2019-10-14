@@ -62,7 +62,7 @@ class PeerMessageListener implements Runnable{
                         System.out.println("Could not read port number");
                       }
                     }
-                  }else if(message.startsWith("ack")){ // all denna logik i receivedAck
+                  }else if(message.startsWith("ack")){
                     String[] arr = message.split(",");
                     if(arr.length != 2){
                       message = "ERROR";

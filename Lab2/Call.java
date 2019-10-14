@@ -3,9 +3,9 @@ import java.net.*;
 import java.io.*;
 public class Call{
 
-  private static String START_MENU = "*************************\n 1. Make call(call)\n 2. Quit(quit)\n*************************";
+  public static String START_MENU = "*************************\n 1. Make call(call)\n 2. Quit(quit)\n*************************";
   private static String UNKOWN_COMMAND = "Unknown command.";
-  
+
   public static void main(String[] args) {
     boolean faulty = false;
     if (args.length < 1 || args.length > 2) {
@@ -37,7 +37,7 @@ public class Call{
         System.err.println("Failed to listen to port: " + port);
         System.exit(1);
       }
-      
+
       IncomingCallListener callListener = new IncomingCallListener(callHandler, serverSocket,
         clientSocket, faulty);
       callListenerThread = new Thread(callListener);
@@ -110,19 +110,7 @@ public class Call{
             callHandler.processNextEvent(CallHandler.CallEvent.BUSY);
             break;
           case "reject":
-            //TODO: ???
-            /*
-            if(callListener.getClient() != null){
-              clientSocket = callListener.getClient();
-              out = new PrintWriter(clientSocket.getOutputStream(), true);
-              System.out.println("Sending reject");
-              out.println("reject");
-              clientSocket.close();
-              callListener.setClientSocket(null);
-            }else{
-
-            }*/
-
+            System.out.println(START_MENU);
             break;
           default:
             if(faulty){
@@ -170,5 +158,5 @@ public class Call{
     }
   }
 
-  
+
 }

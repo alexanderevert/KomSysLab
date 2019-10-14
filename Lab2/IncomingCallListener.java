@@ -37,8 +37,7 @@ class IncomingCallListener implements Runnable{
               System.out.println(INCOMING_CALL_MENU);
             } else {
               System.out.println("Received invalid invite message.");
-              System.out.println("State: CallStateFree");
-              System.out.println(INCOMING_CALL_MENU);
+              System.out.println(Call.START_MENU);
               in.close();
               clientSocket.close();
             }
@@ -51,7 +50,7 @@ class IncomingCallListener implements Runnable{
             }
             if(clientSocket != null){
               clientSocket.close();
-            }///// Här kanske vi kan ha något slags dissconnet/cleanup?   
+            }
           }
         }
       } catch (SocketException se) {
