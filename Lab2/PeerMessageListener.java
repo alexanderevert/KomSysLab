@@ -30,9 +30,22 @@ class PeerMessageListener implements Runnable{
                 Thread.sleep(100);
             } catch(InterruptedException e){
             }
+            
+            try{
+              while(clientSocket.getSoTimeout() == 0){
+                if(in.ready()) break;
+                try{
+                  Thread.sleep(100);
+                } catch(InterruptedException e){
+                }
+              }
+            }catch(IOException ioe){
+
+            }
+            
               String message = null;
                 try{
-                  message = in.readLine();
+                    message = in.readLine();
                 } catch(Exception e){
                   message = "timeout";
                   running = false;

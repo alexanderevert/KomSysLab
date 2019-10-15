@@ -35,6 +35,28 @@ class IncomingCallListener implements Runnable{
               Thread messageListenerThread = new Thread(peerMessageListener);
               messageListenerThread.start();
               System.out.println(INCOMING_CALL_MENU);
+              try{
+                Thread.sleep(21000);
+                if(!callHandler.isCurrentStateBusy()){
+                  messageListenerThread.stop();
+
+                  int port = serverSocket.getLocalPort();
+                  try {
+                    in.close();
+                    clientSocket.close();
+                    serverSocket.close();
+                    serverSocket = null;
+                    serverSocket = new ServerSocket(port);
+                  } catch (IOException e) {
+                    System.err.println("Failed to listen to port: " + port);
+                    System.exit(1);
+                  }
+
+
+                }
+              }catch(Exception e){
+
+              }
             } else {
               System.out.println("Received invalid invite message.");
               System.out.println(Call.START_MENU);
